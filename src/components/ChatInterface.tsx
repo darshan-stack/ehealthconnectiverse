@@ -20,19 +20,25 @@ export interface ChatInterfaceProps {
   onSendMessage?: (message: string) => void;
   placeholder?: string;
   buttonText?: string;
+  // Add the missing recipient properties
+  recipientId?: string;
+  recipientName?: string;
+  recipientAvatar?: string;
+  recipientRole?: string;
 }
 
 interface MessageProps {
   message: Message;
   isUser: boolean;
+  recipientAvatar?: string;
 }
 
-const Message: React.FC<MessageProps> = ({ message, isUser }) => {
+const Message: React.FC<MessageProps> = ({ message, isUser, recipientAvatar }) => {
   return (
     <div className={`flex items-start gap-2 ${isUser ? 'justify-end' : ''}`}>
       {!isUser && (
         <Avatar className="w-8 h-8">
-          <AvatarImage src="https://github.com/shadcn.png" alt="Avatar" />
+          <AvatarImage src={recipientAvatar || "https://github.com/shadcn.png"} alt="Avatar" />
           <AvatarFallback>CN</AvatarFallback>
         </Avatar>
       )}
@@ -48,7 +54,8 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
   messages = [],
   onSendMessage,
   placeholder = "Type your message...",
-  buttonText = "Send"
+  buttonText = "Send",
+  recipientAvatar
 }) => {
   const [newMessage, setNewMessage] = useState('');
   const scrollAreaRef = useRef<HTMLDivElement>(null);
@@ -90,6 +97,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
               key={message.id}
               message={message}
               isUser={message.sender === 'user'}
+              recipientAvatar={recipientAvatar}
             />
           ))}
           <div ref={messagesEndRef} />
