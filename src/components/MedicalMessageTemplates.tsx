@@ -128,7 +128,7 @@ const MedicalMessageTemplates: React.FC<MedicalMessageTemplatesProps> = ({ onSel
           <span>Templates</span>
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="p-0" align="start" side="top" sideOffset={5} alignOffset={-5} width={400}>
+      <PopoverContent className="p-0 w-[400px]" align="start" side="top" sideOffset={5} alignOffset={-5}>
         <Command>
           <CommandInput placeholder="Search medical templates..." />
           <CommandList className="max-h-[300px] overflow-auto">
