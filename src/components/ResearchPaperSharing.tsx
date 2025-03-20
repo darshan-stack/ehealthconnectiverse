@@ -335,9 +335,10 @@ const ResearchPaperSharing: React.FC<{
                 currentUser={currentUser}
                 onSave={handleSavePaper}
                 onLike={handleLikePaper}
-                onComment={() => handleOpenComments(paper.id)}
+                onComment={handleOpenComments}
                 onView={() => handleViewPaper(paper)}
                 isSaved={savedPapers.includes(paper.id)}
+                isLiked={likedPapers.includes(paper.id)}
               />
             ))}
           </div>
@@ -354,9 +355,10 @@ const ResearchPaperSharing: React.FC<{
                   currentUser={currentUser}
                   onSave={handleSavePaper}
                   onLike={handleLikePaper}
-                  onComment={() => handleOpenComments(paper.id)}
+                  onComment={handleOpenComments}
                   onView={() => handleViewPaper(paper)}
                   isSaved={savedPapers.includes(paper.id)}
+                  isLiked={likedPapers.includes(paper.id)}
                 />
               ))}
             {researchPapersState.filter(paper => paper.specialty === currentUser.specialty || paper.tags.includes(currentUser.specialty.toLowerCase())).length === 0 && (
@@ -376,9 +378,10 @@ const ResearchPaperSharing: React.FC<{
                   currentUser={currentUser}
                   onSave={handleSavePaper}
                   onLike={handleLikePaper}
-                  onComment={() => handleOpenComments(paper.id)}
+                  onComment={handleOpenComments}
                   onView={() => handleViewPaper(paper)}
                   isSaved={true}
+                  isLiked={likedPapers.includes(paper.id)}
                 />
               ))}
             {savedPapers.length === 0 && (
@@ -398,9 +401,10 @@ const ResearchPaperSharing: React.FC<{
                   currentUser={currentUser}
                   onSave={handleSavePaper}
                   onLike={handleLikePaper}
-                  onComment={() => handleOpenComments(paper.id)}
+                  onComment={handleOpenComments}
                   onView={() => handleViewPaper(paper)}
                   isSaved={savedPapers.includes(paper.id)}
+                  isLiked={likedPapers.includes(paper.id)}
                 />
               ))}
             {researchPapersState.filter(paper => paper.author.id === currentUser.id).length === 0 && (
@@ -692,9 +696,34 @@ interface ResearchPaperCardProps {
   onComment: (paperId: string) => void;
   onView: () => void;
   isSaved: boolean;
+  isLiked?: boolean;
 }
 
-const ResearchPaperCard: React.FC<ResearchPaperCardProps> = ({ paper, currentUser, onSave, onLike, onComment, onView, isSaved }) => {
+const ResearchPaperCard: React.FC<ResearchPaperCardProps> = ({ 
+  paper, 
+  currentUser, 
+  onSave, 
+  onLike, 
+  onComment, 
+  onView, 
+  isSaved,
+  isLiked = false
+}) => {
+  const handleSave = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    onSave(paper.id);
+  };
+  
+  const handleLike = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    onLike(paper.id);
+  };
+  
+  const handleComment = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    onComment(paper.id);
+  };
+
   return (
     <Card className="bg-card text-card-foreground shadow-sm">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -717,17 +746,17 @@ const ResearchPaperCard: React.FC<ResearchPaperCardProps> = ({ paper, currentUse
       </CardContent>
       <CardFooter className="flex justify-between">
         <div className="flex items-center gap-1">
-          <Button variant="ghost" size="sm" className="gap-1" onClick={onLike}>
-            <ThumbsUp className={`h-4 w-4 ${likedPapers.includes(paper.id) ? 'fill-primary' : ''}`} />
+          <Button variant="ghost" size="sm" className="gap-1" onClick={handleLike}>
+            <ThumbsUp className={`h-4 w-4 ${isLiked ? 'fill-primary' : ''}`} />
             {paper.likes}
           </Button>
-          <Button variant="ghost" size="sm" className="gap-1" onClick={onComment}>
+          <Button variant="ghost" size="sm" className="gap-1" onClick={handleComment}>
             <MessageSquare className="h-4 w-4" />
             {paper.comments?.length || 0}
           </Button>
         </div>
         <div className="flex items-center gap-2">
-          <Button size="sm" variant="outline" onClick={() => onSave(paper.id)}>
+          <Button size="sm" variant="outline" onClick={handleSave}>
             <Bookmark className={`h-4 w-4 ${isSaved ? 'fill-primary' : ''}`} />
           </Button>
           <Button size="sm" onClick={onView}>View</Button>
