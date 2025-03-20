@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,7 +7,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Progress } from "@/components/ui/progress";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Government, BadgeCheck, ArrowRight, AlertCircle, ExternalLink } from "lucide-react";
+import { FileText, BadgeCheck, ArrowRight, AlertCircle, ExternalLink } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
 interface SchemeQuestion {
@@ -284,24 +283,17 @@ const GovernmentSchemes: React.FC = () => {
       }
     }
     
-    // Update scheme status
-    const updatedSchemes = schemes.map(scheme => {
-      if (scheme.id === activeScheme.id) {
-        return {
-          ...scheme,
-          status: isEligible ? 'eligible' : 'ineligible'
-        };
-      }
-      return scheme;
-    });
+    // Update scheme status based on eligibility
+    const newStatus: 'eligible' | 'ineligible' = isEligible ? 'eligible' : 'ineligible';
     
-    // Update active scheme
-    const updatedActiveScheme = {
-      ...activeScheme,
-      status: isEligible ? 'eligible' : 'ineligible'
-    };
+    // Update active scheme with proper type
+    if (activeScheme) {
+      setActiveScheme({
+        ...activeScheme,
+        status: newStatus
+      });
+    }
     
-    setActiveScheme(updatedActiveScheme);
     setEligibilityMode(false);
     
     toast({
@@ -359,7 +351,7 @@ const GovernmentSchemes: React.FC = () => {
             <CardHeader className="pb-2">
               <div className="flex justify-between items-start">
                 <CardTitle className="text-lg flex items-center gap-2">
-                  <Government className="h-5 w-5 text-primary" />
+                  <FileText className="h-5 w-5 text-primary" />
                   {scheme.name}
                 </CardTitle>
                 {scheme.status === 'eligible' && (
@@ -413,7 +405,7 @@ const GovernmentSchemes: React.FC = () => {
             <DialogHeader>
               <div className="flex justify-between items-center">
                 <DialogTitle className="text-xl flex items-center gap-2">
-                  <Government className="h-5 w-5 text-primary" />
+                  <FileText className="h-5 w-5 text-primary" />
                   {activeScheme.name}
                 </DialogTitle>
                 {activeScheme.status === 'eligible' && (

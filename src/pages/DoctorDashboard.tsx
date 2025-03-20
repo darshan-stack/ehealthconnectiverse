@@ -15,7 +15,6 @@ import {
   Bell, 
   Search,
   Ambulance,
-  Government,
   Hospital,
   BookOpen
 } from 'lucide-react';
@@ -218,7 +217,7 @@ const Sidebar = ({ activeTab }: { activeTab: string }) => {
                 : 'text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors'
             }`}
           >
-            <Government className="h-5 w-5" />
+            <FileText className="h-5 w-5" />
             <span>Gov Schemes</span>
           </Link>
           <Link 

@@ -442,17 +442,17 @@ const EmergencyServices: React.FC = () => {
                 >
                   <div className="col-span-4">{hospital.name}</div>
                   <div className="col-span-2 text-center">
-                    <Badge variant={hospital.emergency.beds > 5 ? "success" : hospital.emergency.beds > 0 ? "warning" : "destructive"}>
+                    <Badge variant={hospital.emergency.beds > 5 ? "default" : hospital.emergency.beds > 0 ? "secondary" : "destructive"} className={hospital.emergency.beds > 5 ? "bg-green-500" : ""}>
                       {hospital.emergency.beds}/20
                     </Badge>
                   </div>
                   <div className="col-span-2 text-center">
-                    <Badge variant={index % 3 === 0 ? "destructive" : index % 2 === 0 ? "warning" : "success"}>
+                    <Badge variant={index % 3 === 0 ? "destructive" : index % 2 === 0 ? "secondary" : "default"} className={index % 2 !== 0 && index % 3 !== 0 ? "bg-green-500" : ""}>
                       {index === 0 ? '2/10' : index === 1 ? '5/8' : index === 2 ? '0/6' : '7/12'}
                     </Badge>
                   </div>
                   <div className="col-span-2 text-center">
-                    <Badge variant={index % 2 === 0 ? "success" : "warning"}>
+                    <Badge variant={index % 2 === 0 ? "default" : "secondary"} className={index % 2 === 0 ? "bg-green-500" : ""}>
                       {index === 0 ? '3/5' : index === 1 ? '1/4' : index === 2 ? '2/6' : '4/8'}
                     </Badge>
                   </div>
