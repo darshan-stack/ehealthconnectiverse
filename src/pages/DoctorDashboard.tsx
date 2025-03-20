@@ -1,1109 +1,385 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/context/AuthContext';
-import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
-import ChatInterface from '@/components/ChatInterface';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Progress } from '@/components/ui/progress';
-import {
-  Calendar,
-  FileText,
-  Activity,
-  User,
-  Users,
-  MessageSquare,
-  Bell,
-  Settings,
-  BarChart3,
-  Clock,
-  ChevronRight,
-  Search,
-  Plus,
-  Stethoscope,
-  Clipboard,
-  CheckCircle2,
-  XCircle,
-} from 'lucide-react';
+import { Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Calendar, Clock, Home, MessageSquare, Users, FileText, Settings, Bell } from 'lucide-react';
+import ChatInterface, { Message } from '@/components/ChatInterface';
 
-// Demo patients for the doctor dashboard
-const patients = [
-  {
-    id: 'patient_1',
-    name: 'Rahul Mehta',
-    age: 45,
-    gender: 'Male',
-    condition: 'Hypertension',
-    lastVisit: '2 weeks ago',
-    nextAppointment: 'May 15, 2023',
-    status: 'Stable',
-    avatar: 'https://ui-avatars.com/api/?name=Rahul+Mehta&background=FF453A&color=fff',
-  },
-  {
-    id: 'patient_2',
-    name: 'Sunita Gupta',
-    age: 38,
-    gender: 'Female',
-    condition: 'Diabetes Type 2',
-    lastVisit: '1 month ago',
-    nextAppointment: 'May 22, 2023',
-    status: 'Review',
-    avatar: 'https://ui-avatars.com/api/?name=Sunita+Gupta&background=FFD60A&color=fff',
-  },
-  {
-    id: 'patient_3',
-    name: 'Vikram Singh',
-    age: 62,
-    gender: 'Male',
-    condition: 'Coronary Artery Disease',
-    lastVisit: '3 days ago',
-    nextAppointment: 'June 5, 2023',
-    status: 'Critical',
-    avatar: 'https://ui-avatars.com/api/?name=Vikram+Singh&background=30D158&color=fff',
-  },
-  {
-    id: 'patient_4',
-    name: 'Preeti Sharma',
-    age: 29,
-    gender: 'Female',
-    condition: 'Asthma',
-    lastVisit: '2 months ago',
-    nextAppointment: 'June 15, 2023',
-    status: 'Stable',
-    avatar: 'https://ui-avatars.com/api/?name=Preeti+Sharma&background=64D2FF&color=fff',
-  },
-];
+const DoctorDashboard = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState("dashboard");
 
-// Demo appointments for today
-const todayAppointments = [
-  {
-    id: 'app_1',
-    patientName: 'Vikram Singh',
-    patientId: 'patient_3',
-    time: '10:30 AM',
-    purpose: 'Follow-up',
-    status: 'Completed',
-  },
-  {
-    id: 'app_2',
-    patientName: 'Meera Patel',
-    patientId: 'patient_5',
-    time: '11:45 AM',
-    purpose: 'New Patient',
-    status: 'In Progress',
-  },
-  {
-    id: 'app_3',
-    patientName: 'Arjun Malhotra',
-    patientId: 'patient_6',
-    time: '2:15 PM',
-    purpose: 'Lab Results',
-    status: 'Scheduled',
-  },
-  {
-    id: 'app_4',
-    patientName: 'Kavita Reddy',
-    patientId: 'patient_7',
-    time: '3:30 PM',
-    purpose: 'Consultation',
-    status: 'Scheduled',
-  },
-];
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    navigate(`/doctor/${value === 'dashboard' ? '' : value}`);
+  };
 
-// Demo stats for dashboard
-const doctorStats = {
-  patientsToday: 8,
-  totalPatients: 125,
-  pendingReports: 3,
-  avgConsultationTime: 22, // in minutes
-  patientDemographics: {
-    male: 58,
-    female: 42,
-  },
-  patientsByAge: {
-    under18: 15,
-    age18to30: 22,
-    age31to50: 38,
-    age51to70: 20,
-    over70: 5,
-  },
-  consultationsTrend: [
-    { month: 'Jan', count: 42 },
-    { month: 'Feb', count: 38 },
-    { month: 'Mar', count: 45 },
-    { month: 'Apr', count: 50 },
-    { month: 'May', count: 48 },
-  ],
+  return (
+    <div className="flex h-screen bg-background">
+      <Sidebar />
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <Header />
+        <Tabs 
+          value={activeTab} 
+          onValueChange={handleTabChange}
+          className="flex-1 overflow-hidden"
+        >
+          <div className="border-b px-4">
+            <TabsList className="h-14">
+              <TabsTrigger value="dashboard" className="data-[state=active]:bg-background">
+                <Home className="h-4 w-4 mr-2" />
+                Dashboard
+              </TabsTrigger>
+              <TabsTrigger value="appointments" className="data-[state=active]:bg-background">
+                <Calendar className="h-4 w-4 mr-2" />
+                Appointments
+              </TabsTrigger>
+              <TabsTrigger value="patients" className="data-[state=active]:bg-background">
+                <Users className="h-4 w-4 mr-2" />
+                Patients
+              </TabsTrigger>
+              <TabsTrigger value="messages" className="data-[state=active]:bg-background">
+                <MessageSquare className="h-4 w-4 mr-2" />
+                Messages
+              </TabsTrigger>
+              <TabsTrigger value="records" className="data-[state=active]:bg-background">
+                <FileText className="h-4 w-4 mr-2" />
+                Records
+              </TabsTrigger>
+            </TabsList>
+          </div>
+          <div className="flex-1 overflow-auto p-4">
+            <TabsContent value="dashboard" className="h-full mt-0">
+              <Dashboard />
+            </TabsContent>
+            <TabsContent value="appointments" className="h-full mt-0">
+              <Appointments />
+            </TabsContent>
+            <TabsContent value="patients" className="h-full mt-0">
+              <Patients />
+            </TabsContent>
+            <TabsContent value="messages" className="h-full mt-0">
+              <Messages />
+            </TabsContent>
+            <TabsContent value="records" className="h-full mt-0">
+              <Records />
+            </TabsContent>
+          </div>
+        </Tabs>
+      </div>
+    </div>
+  );
 };
 
-// Main component
-const DoctorDashboard = () => {
-  const { user } = useAuth();
-  const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('overview');
-  const [selectedPatient, setSelectedPatient] = useState<typeof patients[0] | null>(null);
-  
-  // Function to get status color
-  const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
-      case 'stable':
-        return 'bg-green-50 text-green-600 border-green-200';
-      case 'review':
-        return 'bg-yellow-50 text-yellow-600 border-yellow-200';
-      case 'critical':
-        return 'bg-red-50 text-red-600 border-red-200';
-      case 'new':
-        return 'bg-blue-50 text-blue-600 border-blue-200';
-      default:
-        return 'bg-gray-50 text-gray-600 border-gray-200';
-    }
-  };
-  
-  // Function to get appointment status color
-  const getAppointmentStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
-      case 'completed':
-        return 'bg-green-50 text-green-600 border-green-200';
-      case 'in progress':
-        return 'bg-blue-50 text-blue-600 border-blue-200';
-      case 'scheduled':
-        return 'bg-purple-50 text-purple-600 border-purple-200';
-      case 'cancelled':
-        return 'bg-red-50 text-red-600 border-red-200';
-      default:
-        return 'bg-gray-50 text-gray-600 border-gray-200';
-    }
-  };
-  
-  // Dashboard home component
-  const DashboardHome = () => (
-    <div className="space-y-8">
-      {/* Welcome Card */}
-      <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-none shadow-sm">
-        <CardContent className="p-6 sm:p-8">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between">
-            <div>
-              <h2 className="text-2xl sm:text-3xl font-bold mb-2">
-                Welcome, Dr. {user?.name?.split(' ')[0] || 'User'}
-              </h2>
-              <p className="text-muted-foreground">
-                You have {todayAppointments.filter(a => a.status === 'Scheduled').length} upcoming appointments today
-              </p>
-            </div>
-            <Button 
-              className="mt-4 sm:mt-0 bg-primary hover:bg-primary/90 text-white" 
-              onClick={() => setActiveTab('appointments')}
-            >
-              View Schedule
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-      
-      {/* Quick Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="hover:shadow-md transition-all">
-          <CardContent className="p-4 flex flex-col items-center justify-center text-center">
-            <Users className="h-8 w-8 text-primary mb-2" />
-            <h3 className="font-medium">Patients Today</h3>
-            <p className="text-2xl font-bold">{doctorStats.patientsToday}</p>
-            <p className="text-xs text-muted-foreground">
-              {todayAppointments.filter(a => a.status === 'Completed').length} Completed
-            </p>
-          </CardContent>
-        </Card>
-        
-        <Card className="hover:shadow-md transition-all">
-          <CardContent className="p-4 flex flex-col items-center justify-center text-center">
-            <Clock className="h-8 w-8 text-primary mb-2" />
-            <h3 className="font-medium">Next Appointment</h3>
-            <p className="text-lg font-bold">
-              {todayAppointments.find(a => a.status === 'Scheduled')?.time || 'No appointments'}
-            </p>
-            <p className="text-xs text-muted-foreground">
-              {todayAppointments.find(a => a.status === 'Scheduled')?.patientName || ''}
-            </p>
-          </CardContent>
-        </Card>
-        
-        <Card className="hover:shadow-md transition-all">
-          <CardContent className="p-4 flex flex-col items-center justify-center text-center">
-            <Clipboard className="h-8 w-8 text-primary mb-2" />
-            <h3 className="font-medium">Pending Reports</h3>
-            <p className="text-2xl font-bold">{doctorStats.pendingReports}</p>
-            <p className="text-xs text-muted-foreground">Requires attention</p>
-          </CardContent>
-        </Card>
-        
-        <Card className="hover:shadow-md transition-all">
-          <CardContent className="p-4 flex flex-col items-center justify-center text-center">
-            <BarChart3 className="h-8 w-8 text-primary mb-2" />
-            <h3 className="font-medium">Total Patients</h3>
-            <p className="text-2xl font-bold">{doctorStats.totalPatients}</p>
-            <p className="text-xs text-muted-foreground">Active patients</p>
-          </CardContent>
-        </Card>
-      </div>
-      
-      {/* Today's Schedule */}
-      <Card>
-        <CardHeader className="pb-2">
-          <div className="flex justify-between items-center">
-            <CardTitle>Today's Schedule</CardTitle>
-            <Button variant="ghost" size="sm" className="text-primary">
-              Full Calendar
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {todayAppointments.length === 0 ? (
-            <p className="text-center text-muted-foreground py-4">
-              No appointments scheduled for today
-            </p>
-          ) : (
-            <div className="space-y-4">
-              {todayAppointments.map((appointment) => (
-                <div 
-                  key={appointment.id} 
-                  className="flex items-center justify-between p-3 rounded-lg bg-secondary/50 hover:bg-secondary transition-colors"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                      <Clock className="h-5 w-5 text-primary" />
-                    </div>
-                    <div>
-                      <h4 className="font-medium">{appointment.patientName}</h4>
-                      <p className="text-sm text-muted-foreground">
-                        {appointment.time} • {appointment.purpose}
-                      </p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center gap-2">
-                    <div className={`px-2 py-1 rounded text-xs ${getAppointmentStatusColor(appointment.status)}`}>
-                      {appointment.status}
-                    </div>
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="h-8 w-8"
-                      onClick={() => navigate(`/chat/${appointment.patientId}`)}
-                    >
-                      <MessageSquare className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-      
-      {/* Patient Overview */}
-      <Card>
-        <CardHeader className="pb-2">
-          <div className="flex justify-between items-center">
-            <CardTitle>Recent Patients</CardTitle>
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm" className="text-sm">
-                <Search className="h-4 w-4 mr-1" />
-                Find Patient
-              </Button>
-              <Button variant="default" size="sm" className="text-sm bg-primary text-white">
-                <Plus className="h-4 w-4 mr-1" />
-                Add Patient
-              </Button>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-border/50">
-                  <th className="px-4 py-3 text-left font-medium">Patient</th>
-                  <th className="px-4 py-3 text-left font-medium">Age/Gender</th>
-                  <th className="px-4 py-3 text-left font-medium">Condition</th>
-                  <th className="px-4 py-3 text-left font-medium">Status</th>
-                  <th className="px-4 py-3 text-left font-medium">Last Visit</th>
-                  <th className="px-4 py-3 text-left font-medium">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border/50">
-                {patients.map((patient) => (
-                  <tr 
-                    key={patient.id} 
-                    className="hover:bg-muted/30 transition-colors"
-                  >
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full overflow-hidden">
-                          <img 
-                            src={patient.avatar} 
-                            alt={patient.name} 
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                        <span className="font-medium">{patient.name}</span>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3">
-                      {patient.age}, {patient.gender}
-                    </td>
-                    <td className="px-4 py-3">
-                      {patient.condition}
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className={`px-2 py-1 rounded text-xs inline-block ${getStatusColor(patient.status)}`}>
-                        {patient.status}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-muted-foreground">
-                      {patient.lastVisit}
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex gap-2">
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="h-8 w-8"
-                          onClick={() => navigate(`/chat/${patient.id}`)}
-                        >
-                          <MessageSquare className="h-4 w-4" />
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="h-8 w-8"
-                          onClick={() => setSelectedPatient(patient)}
-                        >
-                          <FileText className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
-      
-      {/* Performance Metrics */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Performance Metrics</CardTitle>
-          <CardDescription>Your clinical activity and patient satisfaction</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="space-y-4">
-              <h3 className="text-sm font-medium">Patient Demographics</h3>
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span>Male</span>
-                  <span>{doctorStats.patientDemographics.male}%</span>
-                </div>
-                <Progress value={doctorStats.patientDemographics.male} className="h-2" />
-                
-                <div className="flex justify-between text-sm">
-                  <span>Female</span>
-                  <span>{doctorStats.patientDemographics.female}%</span>
-                </div>
-                <Progress value={doctorStats.patientDemographics.female} className="h-2" />
-              </div>
-              
-              <h3 className="text-sm font-medium mt-6">Age Distribution</h3>
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span>Under 18</span>
-                  <span>{doctorStats.patientsByAge.under18}%</span>
-                </div>
-                <Progress value={doctorStats.patientsByAge.under18} className="h-2" />
-                
-                <div className="flex justify-between text-sm">
-                  <span>18-30</span>
-                  <span>{doctorStats.patientsByAge.age18to30}%</span>
-                </div>
-                <Progress value={doctorStats.patientsByAge.age18to30} className="h-2" />
-                
-                <div className="flex justify-between text-sm">
-                  <span>31-50</span>
-                  <span>{doctorStats.patientsByAge.age31to50}%</span>
-                </div>
-                <Progress value={doctorStats.patientsByAge.age31to50} className="h-2" />
-                
-                <div className="flex justify-between text-sm">
-                  <span>51-70</span>
-                  <span>{doctorStats.patientsByAge.age51to70}%</span>
-                </div>
-                <Progress value={doctorStats.patientsByAge.age51to70} className="h-2" />
-                
-                <div className="flex justify-between text-sm">
-                  <span>Over 70</span>
-                  <span>{doctorStats.patientsByAge.over70}%</span>
-                </div>
-                <Progress value={doctorStats.patientsByAge.over70} className="h-2" />
-              </div>
-            </div>
-            
-            <div className="space-y-4">
-              <h3 className="text-sm font-medium">Consultation Metrics</h3>
-              <div className="grid grid-cols-2 gap-4">
-                <Card className="p-4">
-                  <h4 className="text-xs text-muted-foreground">Avg. Consultation Time</h4>
-                  <p className="text-2xl font-bold">{doctorStats.avgConsultationTime} min</p>
-                </Card>
-                <Card className="p-4">
-                  <h4 className="text-xs text-muted-foreground">Patient Satisfaction</h4>
-                  <p className="text-2xl font-bold">4.8/5</p>
-                </Card>
-                <Card className="p-4">
-                  <h4 className="text-xs text-muted-foreground">Follow-up Rate</h4>
-                  <p className="text-2xl font-bold">92%</p>
-                </Card>
-                <Card className="p-4">
-                  <h4 className="text-xs text-muted-foreground">Treatment Success</h4>
-                  <p className="text-2xl font-bold">88%</p>
-                </Card>
-              </div>
-              
-              <div className="mt-4">
-                <h3 className="text-sm font-medium mb-2">Monthly Consultations</h3>
-                <div className="flex items-end h-32 gap-1">
-                  {doctorStats.consultationsTrend.map((item, index) => (
-                    <div key={index} className="flex flex-col items-center flex-1">
-                      <div 
-                        className="w-full bg-primary/20 rounded-t-sm" 
-                        style={{ 
-                          height: `${(item.count / 50) * 100}%`,
-                          maxHeight: '100%'
-                        }}
-                      ></div>
-                      <span className="text-xs text-muted-foreground mt-1">{item.month}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
-  
-  // Patients component
-  const DashboardPatients = () => (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Patient Management</h2>
-        <div className="flex gap-2">
-          <Button 
-            variant="outline" 
-            className="text-primary border-primary/20"
-          >
-            <Search className="h-4 w-4 mr-2" />
-            Search
-          </Button>
-          <Button className="bg-primary hover:bg-primary/90 text-white">
-            <Plus className="h-4 w-4 mr-2" />
-            Add Patient
-          </Button>
-        </div>
-      </div>
-      
-      <Card>
-        <CardContent className="p-0">
-          {selectedPatient ? (
-            <div className="p-6">
-              <div className="flex justify-between items-start mb-6">
-                <div className="flex gap-4">
-                  <div className="w-16 h-16 rounded-full overflow-hidden">
-                    <img 
-                      src={selectedPatient.avatar} 
-                      alt={selectedPatient.name} 
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-bold">{selectedPatient.name}</h3>
-                    <p className="text-muted-foreground">{selectedPatient.age}, {selectedPatient.gender}</p>
-                    <div className={`mt-2 px-2 py-1 rounded text-xs inline-block ${getStatusColor(selectedPatient.status)}`}>
-                      {selectedPatient.status}
-                    </div>
-                  </div>
-                </div>
-                <Button 
-                  variant="ghost" 
-                  onClick={() => setSelectedPatient(null)}
-                >
-                  Back to List
-                </Button>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                <Card className="p-4">
-                  <h4 className="text-sm font-medium mb-2">Medical Condition</h4>
-                  <p>{selectedPatient.condition}</p>
-                </Card>
-                <Card className="p-4">
-                  <h4 className="text-sm font-medium mb-2">Last Visit</h4>
-                  <p>{selectedPatient.lastVisit}</p>
-                </Card>
-                <Card className="p-4">
-                  <h4 className="text-sm font-medium mb-2">Next Appointment</h4>
-                  <p>{selectedPatient.nextAppointment}</p>
-                </Card>
-              </div>
-              
-              <Tabs defaultValue="medical-history">
-                <TabsList className="mb-6">
-                  <TabsTrigger value="medical-history">Medical History</TabsTrigger>
-                  <TabsTrigger value="prescriptions">Prescriptions</TabsTrigger>
-                  <TabsTrigger value="lab-results">Lab Results</TabsTrigger>
-                  <TabsTrigger value="vitals">Vital Signs</TabsTrigger>
-                </TabsList>
-                
-                <TabsContent value="medical-history" className="space-y-4">
-                  <h3 className="font-medium">Medical History</h3>
-                  <p className="text-muted-foreground">Patient's detailed medical history would be displayed here.</p>
-                  <div className="mt-4 space-y-2">
-                    <div className="flex justify-between p-3 bg-secondary/50 rounded-lg">
-                      <div>
-                        <h4 className="font-medium">Hypertension</h4>
-                        <p className="text-sm text-muted-foreground">Diagnosed 5 years ago</p>
-                      </div>
-                      <Button variant="outline" size="sm">View Details</Button>
-                    </div>
-                    <div className="flex justify-between p-3 bg-secondary/50 rounded-lg">
-                      <div>
-                        <h4 className="font-medium">Appendectomy</h4>
-                        <p className="text-sm text-muted-foreground">Surgery performed in 2018</p>
-                      </div>
-                      <Button variant="outline" size="sm">View Details</Button>
-                    </div>
-                  </div>
-                </TabsContent>
-                
-                <TabsContent value="prescriptions">
-                  <h3 className="font-medium mb-4">Current Prescriptions</h3>
-                  <div className="space-y-3">
-                    <div className="flex justify-between p-3 bg-secondary/50 rounded-lg">
-                      <div>
-                        <h4 className="font-medium">Amlodipine 5mg</h4>
-                        <p className="text-sm text-muted-foreground">Once daily, Morning</p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Button variant="outline" size="sm">Renew</Button>
-                        <Button variant="ghost" size="sm">Edit</Button>
-                      </div>
-                    </div>
-                    <div className="flex justify-between p-3 bg-secondary/50 rounded-lg">
-                      <div>
-                        <h4 className="font-medium">Atorvastatin 10mg</h4>
-                        <p className="text-sm text-muted-foreground">Once daily, Night</p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Button variant="outline" size="sm">Renew</Button>
-                        <Button variant="ghost" size="sm">Edit</Button>
-                      </div>
-                    </div>
-                  </div>
-                </TabsContent>
-                
-                <TabsContent value="lab-results">
-                  <h3 className="font-medium mb-4">Recent Lab Results</h3>
-                  <div className="space-y-3">
-                    <div className="flex justify-between p-3 bg-secondary/50 rounded-lg">
-                      <div>
-                        <h4 className="font-medium">Complete Blood Count</h4>
-                        <p className="text-sm text-muted-foreground">Performed on May 2, 2023</p>
-                      </div>
-                      <Button variant="outline" size="sm">View Report</Button>
-                    </div>
-                    <div className="flex justify-between p-3 bg-secondary/50 rounded-lg">
-                      <div>
-                        <h4 className="font-medium">Lipid Profile</h4>
-                        <p className="text-sm text-muted-foreground">Performed on April 15, 2023</p>
-                      </div>
-                      <Button variant="outline" size="sm">View Report</Button>
-                    </div>
-                  </div>
-                </TabsContent>
-                
-                <TabsContent value="vitals">
-                  <h3 className="font-medium mb-4">Vital Signs History</h3>
-                  <div className="space-y-6">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      <Card className="p-4 text-center">
-                        <h4 className="text-xs text-muted-foreground mb-1">Blood Pressure</h4>
-                        <p className="text-lg font-bold">120/80</p>
-                        <p className="text-xs text-muted-foreground">Last recorded May 2, 2023</p>
-                      </Card>
-                      <Card className="p-4 text-center">
-                        <h4 className="text-xs text-muted-foreground mb-1">Heart Rate</h4>
-                        <p className="text-lg font-bold">78 BPM</p>
-                        <p className="text-xs text-muted-foreground">Last recorded May 2, 2023</p>
-                      </Card>
-                      <Card className="p-4 text-center">
-                        <h4 className="text-xs text-muted-foreground mb-1">Temperature</h4>
-                        <p className="text-lg font-bold">98.6°F</p>
-                        <p className="text-xs text-muted-foreground">Last recorded May 2, 2023</p>
-                      </Card>
-                      <Card className="p-4 text-center">
-                        <h4 className="text-xs text-muted-foreground mb-1">Oxygen Saturation</h4>
-                        <p className="text-lg font-bold">98%</p>
-                        <p className="text-xs text-muted-foreground">Last recorded May 2, 2023</p>
-                      </Card>
-                    </div>
-                    
-                    <div>
-                      <h4 className="font-medium mb-3">Blood Pressure Trend</h4>
-                      <div className="h-32 bg-secondary/50 rounded-lg flex items-center justify-center">
-                        <p className="text-muted-foreground">Blood pressure graph would display here</p>
-                      </div>
-                    </div>
-                  </div>
-                </TabsContent>
-              </Tabs>
-              
-              <div className="mt-6 flex gap-2">
-                <Button
-                  className="bg-primary hover:bg-primary/90 text-white"
-                  onClick={() => navigate(`/chat/${selectedPatient.id}`)}
-                >
-                  <MessageSquare className="h-4 w-4 mr-2" />
-                  Message Patient
-                </Button>
-                <Button variant="outline">
-                  <Calendar className="h-4 w-4 mr-2" />
-                  Schedule Appointment
-                </Button>
-                <Button variant="outline">
-                  <FileText className="h-4 w-4 mr-2" />
-                  Update Records
-                </Button>
-              </div>
-            </div>
-          ) : (
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-border/50">
-                  <th className="px-4 py-3 text-left font-medium">Patient</th>
-                  <th className="px-4 py-3 text-left font-medium">Age/Gender</th>
-                  <th className="px-4 py-3 text-left font-medium">Condition</th>
-                  <th className="px-4 py-3 text-left font-medium">Status</th>
-                  <th className="px-4 py-3 text-left font-medium">Last Visit</th>
-                  <th className="px-4 py-3 text-left font-medium">Next Appointment</th>
-                  <th className="px-4 py-3 text-left font-medium">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border/50">
-                {patients.map((patient) => (
-                  <tr 
-                    key={patient.id} 
-                    className="hover:bg-muted/30 transition-colors cursor-pointer"
-                    onClick={() => setSelectedPatient(patient)}
-                  >
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full overflow-hidden">
-                          <img 
-                            src={patient.avatar} 
-                            alt={patient.name} 
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                        <span className="font-medium">{patient.name}</span>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3">
-                      {patient.age}, {patient.gender}
-                    </td>
-                    <td className="px-4 py-3">
-                      {patient.condition}
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className={`px-2 py-1 rounded text-xs inline-block ${getStatusColor(patient.status)}`}>
-                        {patient.status}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-muted-foreground">
-                      {patient.lastVisit}
-                    </td>
-                    <td className="px-4 py-3 text-muted-foreground">
-                      {patient.nextAppointment}
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex gap-2">
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="h-8 w-8"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            navigate(`/chat/${patient.id}`);
-                          }}
-                        >
-                          <MessageSquare className="h-4 w-4" />
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="h-8 w-8"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            // Additional action if needed
-                          }}
-                        >
-                          <ChevronRight className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </CardContent>
-      </Card>
-    </div>
-  );
-  
-  // Messages component
-  const DashboardMessages = () => (
-    <div className="space-y-6 h-full">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Patient Messages</h2>
-        <Button className="bg-primary hover:bg-primary/90 text-white">
-          <Plus className="h-4 w-4 mr-2" />
-          New Message
-        </Button>
-      </div>
-      
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-16rem)]">
-        <Card className="lg:col-span-1 overflow-hidden border-border/50">
-          <CardContent className="p-0">
-            <div className="p-3 bg-muted/30 border-b border-border/50">
-              <h3 className="font-medium">Recent Conversations</h3>
-            </div>
-            <div className="divide-y divide-border/50 max-h-[calc(100vh-20rem)] overflow-y-auto">
-              {patients.map((patient) => (
-                <div 
-                  key={patient.id}
-                  className="flex items-center gap-3 p-3 hover:bg-muted/30 cursor-pointer transition-colors"
-                  onClick={() => navigate(`/chat/${patient.id}`)}
-                >
-                  <div className="w-10 h-10 rounded-full overflow-hidden">
-                    <img 
-                      src={patient.avatar} 
-                      alt={patient.name} 
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex justify-between items-center">
-                      <h4 className="font-medium text-sm truncate">{patient.name}</h4>
-                      <span className="text-xs text-muted-foreground">2h ago</span>
-                    </div>
-                    <p className="text-xs text-muted-foreground truncate">
-                      Latest message preview would appear here...
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card className="lg:col-span-2 overflow-hidden border-border/50 flex flex-col">
-          <CardContent className="p-0 flex-1 flex flex-col">
-            <div className="p-3 bg-muted/30 border-b border-border/50 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full overflow-hidden">
-                <img 
-                  src="https://ui-avatars.com/api/?name=Rahul+Mehta&background=FF453A&color=fff" 
-                  alt="Patient" 
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div>
-                <h3 className="font-medium">Rahul Mehta</h3>
-                <p className="text-xs text-muted-foreground">Last active 10 minutes ago</p>
-              </div>
-            </div>
-            
-            <div className="flex-1 p-4 overflow-y-auto bg-secondary/30">
-              <ChatInterface 
-                chatId="demo" 
-                placeholder="Type your medical advice or questions here..."
-                buttonText="Send Message"
-              />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
-  );
-  
-  // Appointments component
-  const DashboardAppointments = () => (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Appointments</h2>
-        <div className="flex gap-2">
-          <Button variant="outline" className="text-primary border-primary/20">
-            <Calendar className="h-4 w-4 mr-2" />
-            View Calendar
-          </Button>
-          <Button className="bg-primary hover:bg-primary/90 text-white">
-            <Plus className="h-4 w-4 mr-2" />
-            New Appointment
-          </Button>
-        </div>
-      </div>
-      
-      <Tabs defaultValue="upcoming">
-        <TabsList className="mb-6">
-          <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
-          <TabsTrigger value="past">Past</TabsTrigger>
-          <TabsTrigger value="canceled">Canceled</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="upcoming">
-          <Card>
-            <CardContent className="p-0">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-border/50">
-                    <th className="px-4 py-3 text-left font-medium">Patient</th>
-                    <th className="px-4 py-3 text-left font-medium">Date & Time</th>
-                    <th className="px-4 py-3 text-left font-medium">Purpose</th>
-                    <th className="px-4 py-3 text-left font-medium">Status</th>
-                    <th className="px-4 py-3 text-left font-medium">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border/50">
-                  {todayAppointments
-                    .filter(app => app.status === 'Scheduled')
-                    .map((appointment) => (
-                    <tr key={appointment.id} className="hover:bg-muted/30 transition-colors">
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                            <User className="h-4 w-4 text-primary" />
-                          </div>
-                          <span className="font-medium">{appointment.patientName}</span>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 text-muted-foreground">
-                        Today, {appointment.time}
-                      </td>
-                      <td className="px-4 py-3">
-                        {appointment.purpose}
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className={`px-2 py-1 rounded text-xs inline-block ${getAppointmentStatusColor(appointment.status)}`}>
-                          {appointment.status}
-                        </div>
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex gap-2">
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            className="text-xs"
-                          >
-                            <CheckCircle2 className="h-3 w-3 mr-1" />
-                            Start
-                          </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="sm"
-                            className="text-xs"
-                          >
-                            <XCircle className="h-3 w-3 mr-1" />
-                            Cancel
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="past">
-          <Card>
-            <CardContent className="p-0">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-border/50">
-                    <th className="px-4 py-3 text-left font-medium">Patient</th>
-                    <th className="px-4 py-3 text-left font-medium">Date & Time</th>
-                    <th className="px-4 py-3 text-left font-medium">Purpose</th>
-                    <th className="px-4 py-3 text-left font-medium">Status</th>
-                    <th className="px-4 py-3 text-left font-medium">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border/50">
-                  {todayAppointments
-                    .filter(app => app.status === 'Completed')
-                    .map((appointment) => (
-                    <tr key={appointment.id} className="hover:bg-muted/30 transition-colors">
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                            <User className="h-4 w-4 text-primary" />
-                          </div>
-                          <span className="font-medium">{appointment.patientName}</span>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 text-muted-foreground">
-                        Today, {appointment.time}
-                      </td>
-                      <td className="px-4 py-3">
-                        {appointment.purpose}
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className={`px-2 py-1 rounded text-xs inline-block ${getAppointmentStatusColor(appointment.status)}`}>
-                          {appointment.status}
-                        </div>
-                      </td>
-                      <td className="px-4 py-3">
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
-                          className="text-xs"
-                          onClick={() => navigate(`/chat/${appointment.patientId}`)}
-                        >
-                          <MessageSquare className="h-3 w-3 mr-1" />
-                          Follow Up
-                        </Button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="canceled">
-          <Card>
-            <CardContent className="p-6 text-center">
-              <p className="text-muted-foreground">No canceled appointments.</p>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
-    </div>
-  );
-  
-  // Settings component
-  const DashboardSettings = () => (
-    <div className="space-y-6">
-      <h2 className="text-2xl font-bold">Settings</h2>
-      
-      <Card>
-        <CardHeader>
-          <CardTitle>Profile Settings</CardTitle>
-          <CardDescription>Manage your doctor profile information</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground">Profile settings form would go here</p>
-        </CardContent>
-      </Card>
-      
-      <Card>
-        <CardHeader>
-          <CardTitle>Account Settings</CardTitle>
-          <CardDescription>Manage your account preferences</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground">Account settings options would go here</p>
-        </CardContent>
-      </Card>
-      
-      <Card>
-        <CardHeader>
-          <CardTitle>Notification Preferences</CardTitle>
-          <CardDescription>Choose how you want to be notified</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground">Notification settings would go here</p>
-        </CardContent>
-      </Card>
-    </div>
-  );
-  
-  // Main component rendering
+const Sidebar = () => {
   return (
-    <>
-      <Navbar />
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex flex-col md:flex-row gap-6">
-          {/* Sidebar */}
-          <div className="md:w-64 bg-white shadow-sm rounded-lg p-4 h-fit border border-border/50">
-            <div className="space-y-1">
-              <Button
-                variant={activeTab === 'overview' ? 'default' : 'ghost'}
-                className={`w-full justify-start ${activeTab === 'overview' ? 'bg-primary text-white' : ''}`}
-                onClick={() => setActiveTab('overview')}
-              >
-                <Activity className="mr-2 h-4 w-4" />
-                Overview
-              </Button>
-              <Button
-                variant={activeTab === 'patients' ? 'default' : 'ghost'}
-                className={`w-full justify-start ${activeTab === 'patients' ? 'bg-primary text-white' : ''}`}
-                onClick={() => setActiveTab('patients')}
-              >
-                <Users className="mr-2 h-4 w-4" />
-                Patients
-              </Button>
-              <Button
-                variant={activeTab === 'appointments' ? 'default' : 'ghost'}
-                className={`w-full justify-start ${activeTab === 'appointments' ? 'bg-primary text-white' : ''}`}
-                onClick={() => setActiveTab('appointments')}
-              >
-                <Calendar className="mr-2 h-4 w-4" />
-                Appointments
-              </Button>
-              <Button
-                variant={activeTab === 'messages' ? 'default' : 'ghost'}
-                className={`w-full justify-start ${activeTab === 'messages' ? 'bg-primary text-white' : ''}`}
-                onClick={() => setActiveTab('messages')}
-              >
-                <MessageSquare className="mr-2 h-4 w-4" />
-                Messages
-              </Button>
-              <Button
-                variant={activeTab === 'settings' ? 'default' : 'ghost'}
-                className={`w-full justify-start ${activeTab === 'settings' ? 'bg-primary text-white' : ''}`}
-                onClick={() => setActiveTab('settings')}
-              >
-                <Settings className="mr-2 h-4 w-4" />
-                Settings
-              </Button>
-            </div>
-          </div>
-          
-          {/* Main content */}
-          <div className="flex-1">
-            {activeTab === 'overview' && <DashboardHome />}
-            {activeTab === 'patients' && <DashboardPatients />}
-            {activeTab === 'appointments' && <DashboardAppointments />}
-            {activeTab === 'messages' && <DashboardMessages />}
-            {activeTab === 'settings' && <DashboardSettings />}
+    <div className="w-64 border-r bg-sidebar p-4 flex flex-col">
+      <div className="flex items-center gap-2 mb-8">
+        <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white font-bold">
+          E
+        </div>
+        <h1 className="text-xl font-bold">eHealthWave</h1>
+      </div>
+      
+      <div className="flex-1">
+        <nav className="space-y-1">
+          <Link to="/doctor" className="flex items-center gap-3 px-3 py-2 rounded-md bg-sidebar-accent text-sidebar-accent-foreground">
+            <Home className="h-5 w-5" />
+            <span>Dashboard</span>
+          </Link>
+          <Link to="/doctor/appointments" className="flex items-center gap-3 px-3 py-2 rounded-md text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors">
+            <Calendar className="h-5 w-5" />
+            <span>Appointments</span>
+          </Link>
+          <Link to="/doctor/patients" className="flex items-center gap-3 px-3 py-2 rounded-md text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors">
+            <Users className="h-5 w-5" />
+            <span>Patients</span>
+          </Link>
+          <Link to="/doctor/messages" className="flex items-center gap-3 px-3 py-2 rounded-md text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors">
+            <MessageSquare className="h-5 w-5" />
+            <span>Messages</span>
+          </Link>
+          <Link to="/doctor/records" className="flex items-center gap-3 px-3 py-2 rounded-md text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors">
+            <FileText className="h-5 w-5" />
+            <span>Records</span>
+          </Link>
+        </nav>
+      </div>
+      
+      <div className="border-t pt-4">
+        <Link to="/doctor/settings" className="flex items-center gap-3 px-3 py-2 rounded-md text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors">
+          <Settings className="h-5 w-5" />
+          <span>Settings</span>
+        </Link>
+        <div className="flex items-center gap-3 mt-4">
+          <Avatar>
+            <AvatarImage src="/avatars/doctor.jpg" />
+            <AvatarFallback>DR</AvatarFallback>
+          </Avatar>
+          <div>
+            <p className="text-sm font-medium">Dr. Sarah Chen</p>
+            <p className="text-xs text-sidebar-foreground">Cardiologist</p>
           </div>
         </div>
       </div>
-      <Footer />
-    </>
+    </div>
+  );
+};
+
+const Header = () => {
+  return (
+    <header className="border-b h-14 flex items-center justify-between px-4">
+      <div>
+        <h2 className="text-lg font-semibold">Doctor Dashboard</h2>
+      </div>
+      <div className="flex items-center gap-4">
+        <Button variant="outline" size="icon" className="rounded-full">
+          <Bell className="h-4 w-4" />
+        </Button>
+        <Avatar>
+          <AvatarImage src="/avatars/doctor.jpg" />
+          <AvatarFallback>DR</AvatarFallback>
+        </Avatar>
+      </div>
+    </header>
+  );
+};
+
+const Dashboard = () => {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <Card>
+        <CardContent className="p-6">
+          <h3 className="text-lg font-medium mb-2">Today's Appointments</h3>
+          <div className="text-3xl font-bold">8</div>
+          <p className="text-muted-foreground text-sm mt-2">2 more than yesterday</p>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardContent className="p-6">
+          <h3 className="text-lg font-medium mb-2">Total Patients</h3>
+          <div className="text-3xl font-bold">248</div>
+          <p className="text-muted-foreground text-sm mt-2">12 new this week</p>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardContent className="p-6">
+          <h3 className="text-lg font-medium mb-2">Unread Messages</h3>
+          <div className="text-3xl font-bold">5</div>
+          <p className="text-muted-foreground text-sm mt-2">3 urgent</p>
+        </CardContent>
+      </Card>
+      
+      <Card className="md:col-span-2">
+        <CardContent className="p-6">
+          <h3 className="text-lg font-medium mb-4">Upcoming Appointments</h3>
+          <div className="space-y-4">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="flex items-center justify-between border-b pb-4 last:border-0 last:pb-0">
+                <div className="flex items-center gap-3">
+                  <Avatar>
+                    <AvatarFallback>P{i}</AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="font-medium">Patient Name {i}</p>
+                    <p className="text-sm text-muted-foreground">General Checkup</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <Clock className="h-4 w-4 text-muted-foreground" />
+                  <span>10:0{i} AM</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+      
+      <Card>
+        <CardContent className="p-6">
+          <h3 className="text-lg font-medium mb-4">Recent Activity</h3>
+          <div className="space-y-4">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="flex items-start gap-3 border-b pb-4 last:border-0 last:pb-0">
+                <div className="w-2 h-2 rounded-full bg-primary mt-2" />
+                <div>
+                  <p className="text-sm">Updated patient records for <span className="font-medium">Patient {i}</span></p>
+                  <p className="text-xs text-muted-foreground">{i} hour{i !== 1 ? 's' : ''} ago</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
+const Appointments = () => {
+  return (
+    <div>
+      <h2 className="text-2xl font-bold mb-6">Appointments</h2>
+      <Card>
+        <CardContent className="p-6">
+          <div className="space-y-6">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="flex items-center justify-between border-b pb-6 last:border-0 last:pb-0">
+                <div className="flex items-center gap-4">
+                  <Avatar className="h-12 w-12">
+                    <AvatarFallback>P{i}</AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="font-medium">Patient Name {i}</p>
+                    <p className="text-sm text-muted-foreground">General Checkup</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-4">
+                  <div className="text-right">
+                    <p className="font-medium">Today</p>
+                    <p className="text-sm text-muted-foreground">10:0{i} AM</p>
+                  </div>
+                  <Button variant="outline" size="sm">Reschedule</Button>
+                  <Button size="sm">Start</Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
+const Patients = () => {
+  return (
+    <div>
+      <h2 className="text-2xl font-bold mb-6">Patients</h2>
+      <Card>
+        <CardContent className="p-6">
+          <div className="space-y-6">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="flex items-center justify-between border-b pb-6 last:border-0 last:pb-0">
+                <div className="flex items-center gap-4">
+                  <Avatar className="h-12 w-12">
+                    <AvatarFallback>P{i}</AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="font-medium">Patient Name {i}</p>
+                    <p className="text-sm text-muted-foreground">ID: PAT-100{i}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button variant="outline" size="sm">View Records</Button>
+                  <Button size="sm">Message</Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
+const Messages = () => {
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      id: '1',
+      content: 'Hello Dr. Chen, I have been experiencing some chest pain lately.',
+      sender: 'user',
+      timestamp: new Date(Date.now() - 3600000)
+    },
+    {
+      id: '2',
+      content: 'I'm sorry to hear that. Can you describe the pain? Is it sharp or dull? Does it radiate to other areas?',
+      sender: 'doctor',
+      timestamp: new Date(Date.now() - 3500000)
+    },
+    {
+      id: '3',
+      content: 'It's a sharp pain, mostly on the left side. Sometimes it goes down my left arm.',
+      sender: 'user',
+      timestamp: new Date(Date.now() - 3400000)
+    },
+    {
+      id: '4',
+      content: 'That could be concerning. How long have you been experiencing this? And do you have any history of heart problems?',
+      sender: 'doctor',
+      timestamp: new Date(Date.now() - 3300000)
+    }
+  ]);
+
+  const handleSendMessage = (content: string) => {
+    const newMessage: Message = {
+      id: Date.now().toString(),
+      content,
+      sender: 'doctor',
+      timestamp: new Date()
+    };
+    
+    setMessages([...messages, newMessage]);
+    
+    // Simulate a response
+    setTimeout(() => {
+      const response: Message = {
+        id: (Date.now() + 1).toString(),
+        content: 'Thank you for the information, doctor. I'll follow your advice.',
+        sender: 'user',
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, response]);
+    }, 3000);
+  };
+  
+  return (
+    <div className="h-full flex flex-col">
+      <div className="flex-1 overflow-hidden">
+        <Card className="h-full flex flex-col">
+          <CardContent className="p-0 flex-1">
+            <ChatInterface 
+              messages={messages} 
+              onSendMessage={handleSendMessage}
+              placeholder="Type your message..."
+              buttonText="Send"
+            />
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+};
+
+const Records = () => {
+  return (
+    <div>
+      <h2 className="text-2xl font-bold mb-6">Patient Records</h2>
+      <Card>
+        <CardContent className="p-6">
+          <div className="space-y-6">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="flex items-center justify-between border-b pb-6 last:border-0 last:pb-0">
+                <div className="flex items-center gap-4">
+                  <Avatar className="h-12 w-12">
+                    <AvatarFallback>P{i}</AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="font-medium">Patient Name {i}</p>
+                    <p className="text-sm text-muted-foreground">Last updated: {i} day{i !== 1 ? 's' : ''} ago</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button variant="outline" size="sm">View</Button>
+                  <Button size="sm">Update</Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 
