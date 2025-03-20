@@ -1,12 +1,13 @@
-
 import React, { useState } from 'react';
 import { Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, Clock, Home, MessageSquare, Users, FileText, Settings, Bell } from 'lucide-react';
+import { Calendar, Clock, Home, MessageSquare, Users, FileText, Settings, Bell, Search } from 'lucide-react';
 import ChatInterface, { Message } from '@/components/ChatInterface';
+import DoctorDirectory from '@/components/DoctorDirectory';
+import { useToast } from "@/components/ui/use-toast";
 
 const DoctorDashboard = () => {
   const location = useLocation();
@@ -286,6 +287,9 @@ const Patients = () => {
 };
 
 const Messages = () => {
+  const { toast } = useToast();
+  const [activeChat, setActiveChat] = useState<string | null>('patient_123');
+  const [showDirectory, setShowDirectory] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
@@ -316,6 +320,38 @@ const Messages = () => {
   ]);
   
   const [isTyping, setIsTyping] = useState(false);
+  const [conversations, setConversations] = useState([
+    {
+      id: 'patient_123',
+      name: 'John Doe',
+      avatar: '/avatars/patient.jpg',
+      role: 'Patient',
+      lastMessage: "It's a sharp pain, mostly on the left side. Sometimes it goes down my left arm.",
+      unread: 0,
+      time: '10:45 AM',
+      type: 'patient'
+    },
+    {
+      id: 'dr_456',
+      name: 'Dr. Priya Sharma',
+      avatar: '/avatars/doctor-2.jpg',
+      role: 'Neurologist',
+      lastMessage: "I'd like your opinion on this patient's brain MRI. Do you see any abnormalities in the temporal lobe?",
+      unread: 2,
+      time: 'Yesterday',
+      type: 'doctor'
+    },
+    {
+      id: 'dr_789',
+      name: 'Dr. Anand Verma',
+      avatar: '/avatars/doctor-3.jpg',
+      role: 'Pediatrician',
+      lastMessage: "Thank you for referring that patient. I've scheduled them for a follow-up next week.",
+      unread: 0,
+      time: 'Yesterday',
+      type: 'doctor'
+    }
+  ]);
 
   const handleSendMessage = (content: string, attachments?: File[]) => {
     const newMessage: Message = {
@@ -341,6 +377,13 @@ const Messages = () => {
     }
     
     setMessages([...messages, newMessage]);
+    
+    // Update the conversation list with the new message
+    setConversations(prev => prev.map(conv => 
+      conv.id === activeChat 
+        ? {...conv, lastMessage: content, time: 'Just now'} 
+        : conv
+    ));
     
     // Simulate message status changes
     setTimeout(() => {
@@ -378,6 +421,13 @@ const Messages = () => {
           
           setMessages(prev => [...prev, response]);
           
+          // Update conversation list
+          setConversations(prev => prev.map(conv => 
+            conv.id === activeChat 
+              ? {...conv, lastMessage: response.content, time: 'Just now'} 
+              : conv
+          ));
+          
           // Mark doctor's message as read
           setTimeout(() => {
             setMessages(prev => prev.map(msg => 
@@ -389,24 +439,147 @@ const Messages = () => {
     }, 1000);
   };
   
+  const handleSelectConversation = (id: string) => {
+    setActiveChat(id);
+    // Clear unread count
+    setConversations(prev => prev.map(conv => 
+      conv.id === id 
+        ? {...conv, unread: 0} 
+        : conv
+    ));
+    
+    // In a real app, this would fetch messages for the selected conversation
+    // For now, we'll just keep the existing messages
+  };
+  
+  const handleSelectDoctor = (doctor: any) => {
+    // Check if we already have a conversation with this doctor
+    const existingConversation = conversations.find(conv => conv.id === doctor.id);
+    
+    if (!existingConversation) {
+      // Create a new conversation
+      const newConversation = {
+        id: doctor.id,
+        name: doctor.name,
+        avatar: doctor.avatar,
+        role: doctor.specialty,
+        lastMessage: "New conversation started",
+        unread: 0,
+        time: 'Just now',
+        type: 'doctor'
+      };
+      
+      setConversations([newConversation, ...conversations]);
+    }
+    
+    // Select the conversation
+    setActiveChat(doctor.id);
+    setShowDirectory(false);
+    
+    toast({
+      title: "Chat started",
+      description: `You can now chat with ${doctor.name}`,
+    });
+  };
+  
+  const getActiveConversation = () => {
+    return conversations.find(conv => conv.id === activeChat) || null;
+  };
+  
   return (
     <div className="h-full flex flex-col">
       <div className="flex-1 overflow-hidden">
-        <Card className="h-full flex flex-col">
-          <CardContent className="p-0 flex-1">
-            <ChatInterface 
-              messages={messages} 
-              onSendMessage={handleSendMessage}
-              placeholder="Type your message..."
-              buttonText="Send"
-              recipientId="patient_123"
-              recipientName="John Doe" 
-              recipientAvatar="/avatars/patient.jpg"
-              recipientRole="Patient"
-              isTyping={isTyping}
-            />
-          </CardContent>
-        </Card>
+        <div className="h-full grid grid-cols-12 gap-0">
+          {/* Sidebar with conversations list */}
+          <div className="col-span-3 border-r h-full overflow-y-auto">
+            <div className="p-4 border-b">
+              <div className="flex justify-between items-center">
+                <h3 className="font-medium">Messages</h3>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-8 w-8 p-0 rounded-full"
+                  onClick={() => setShowDirectory(!showDirectory)}
+                >
+                  <MessageSquare className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+            {!showDirectory ? (
+              <div className="divide-y">
+                {conversations.map(conversation => (
+                  <div 
+                    key={conversation.id}
+                    className={`p-3 cursor-pointer hover:bg-muted/50 ${activeChat === conversation.id ? 'bg-muted' : ''}`}
+                    onClick={() => handleSelectConversation(conversation.id)}
+                  >
+                    <div className="flex gap-3">
+                      <Avatar className="h-12 w-12 relative">
+                        <AvatarImage src={conversation.avatar} alt={conversation.name} />
+                        <AvatarFallback>{conversation.name.substring(0, 2).toUpperCase()}</AvatarFallback>
+                        {conversation.type === 'doctor' && (
+                          <div className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-blue-500 border-2 border-white"></div>
+                        )}
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex justify-between items-start">
+                          <h4 className="font-medium text-sm truncate">{conversation.name}</h4>
+                          <span className="text-xs text-muted-foreground">{conversation.time}</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground">{conversation.role}</p>
+                        <p className="text-xs truncate">{conversation.lastMessage}</p>
+                      </div>
+                      {conversation.unread > 0 && (
+                        <div className="flex-shrink-0 flex items-start">
+                          <span className="bg-primary text-primary-foreground text-xs rounded-full h-5 min-w-5 flex items-center justify-center px-1">
+                            {conversation.unread}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <DoctorDirectory onSelectDoctor={handleSelectDoctor} />
+            )}
+          </div>
+          
+          {/* Chat area */}
+          <div className="col-span-9 h-full flex flex-col">
+            <Card className="h-full flex flex-col rounded-none border-0">
+              <CardContent className="p-0 flex-1">
+                {activeChat ? (
+                  <ChatInterface 
+                    messages={messages} 
+                    onSendMessage={handleSendMessage}
+                    placeholder="Type your message..."
+                    buttonText="Send"
+                    recipientId={activeChat}
+                    recipientName={getActiveConversation()?.name || ''}
+                    recipientAvatar={getActiveConversation()?.avatar || ''}
+                    recipientRole={getActiveConversation()?.role || ''}
+                    isTyping={isTyping}
+                  />
+                ) : (
+                  <div className="h-full flex items-center justify-center">
+                    <div className="text-center p-6">
+                      <MessageSquare className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                      <h3 className="font-medium text-lg">No conversation selected</h3>
+                      <p className="text-muted-foreground mt-1">Select a conversation from the sidebar or start a new one</p>
+                      <Button
+                        className="mt-4"
+                        onClick={() => setShowDirectory(true)}
+                      >
+                        Find Doctors
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       </div>
     </div>
   );

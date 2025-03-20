@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Paperclip, Send, Image, Mic, Film } from "lucide-react";
 import { cn } from "@/lib/utils";
+import MedicalMessageTemplates from './MedicalMessageTemplates';
 
 export interface Message {
   id: string;
@@ -50,7 +51,7 @@ const Message: React.FC<MessageProps> = ({ message, isUser, recipientAvatar }) =
         </Avatar>
       )}
       <div className="flex flex-col gap-1.5 rounded-md px-3 py-2 w-fit max-w-[400px]" style={{ backgroundColor: isUser ? '#DCF8C6' : '#FFFFFF' }}>
-        <p className="text-sm">{message.content}</p>
+        <p className="text-sm whitespace-pre-wrap">{message.content}</p>
         
         {message.attachments && message.attachments.length > 0 && (
           <div className="mt-2 space-y-2">
@@ -158,6 +159,17 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
 
   const removeAttachment = (index: number) => {
     setAttachments(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleTemplateSelect = (template: string) => {
+    setNewMessage(prev => prev + (prev ? '\n\n' : '') + template);
+    // Focus the textarea
+    if (textareaRef.current) {
+      textareaRef.current.focus();
+      // Adjust height to fit content
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+    }
   };
 
   return (
@@ -271,6 +283,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                 >
                   <Film className="h-4 w-4" />
                 </Button>
+                <MedicalMessageTemplates onSelectTemplate={handleTemplateSelect} />
               </div>
               <Button 
                 type="submit" 
