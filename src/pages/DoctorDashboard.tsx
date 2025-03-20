@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
 import { Card, CardContent } from "@/components/ui/card";
@@ -290,7 +291,8 @@ const Messages = () => {
       id: '1',
       content: 'Hello Dr. Chen, I have been experiencing some chest pain lately.',
       sender: 'user',
-      timestamp: new Date(Date.now() - 3600000)
+      timestamp: new Date(Date.now() - 3600000),
+      status: 'read'
     },
     {
       id: '2',
@@ -302,7 +304,8 @@ const Messages = () => {
       id: '3',
       content: "It's a sharp pain, mostly on the left side. Sometimes it goes down my left arm.",
       sender: 'user',
-      timestamp: new Date(Date.now() - 3400000)
+      timestamp: new Date(Date.now() - 3400000),
+      status: 'read'
     },
     {
       id: '4',
@@ -311,27 +314,79 @@ const Messages = () => {
       timestamp: new Date(Date.now() - 3300000)
     }
   ]);
+  
+  const [isTyping, setIsTyping] = useState(false);
 
-  const handleSendMessage = (content: string) => {
+  const handleSendMessage = (content: string, attachments?: File[]) => {
     const newMessage: Message = {
       id: Date.now().toString(),
       content,
       sender: 'doctor',
-      timestamp: new Date()
+      timestamp: new Date(),
+      status: 'sending'
     };
+    
+    if (attachments && attachments.length > 0) {
+      newMessage.attachments = attachments.map(file => ({
+        type: file.type.startsWith('image/') 
+          ? 'image' 
+          : file.type.startsWith('audio/') 
+            ? 'audio' 
+            : file.type.startsWith('video/') 
+              ? 'video' 
+              : 'document',
+        url: URL.createObjectURL(file),
+        name: file.name
+      }));
+    }
     
     setMessages([...messages, newMessage]);
     
-    // Simulate a response
+    // Simulate message status changes
     setTimeout(() => {
-      const response: Message = {
-        id: (Date.now() + 1).toString(),
-        content: "Thank you for the information, doctor. I'll follow your advice.",
-        sender: 'user',
-        timestamp: new Date()
-      };
-      setMessages(prev => [...prev, response]);
-    }, 3000);
+      setMessages(prev => prev.map(msg => 
+        msg.id === newMessage.id ? { ...msg, status: 'sent' } : msg
+      ));
+      
+      setTimeout(() => {
+        setMessages(prev => prev.map(msg => 
+          msg.id === newMessage.id ? { ...msg, status: 'delivered' } : msg
+        ));
+        
+        // Simulate typing indicator
+        setIsTyping(true);
+        
+        // Simulate a response
+        setTimeout(() => {
+          setIsTyping(false);
+          
+          const responses = [
+            "Thank you for the information, doctor. I'll follow your advice.",
+            "I appreciate your quick response. When should I come for a follow-up?",
+            "Should I take any medication for this in the meantime?",
+            "I've had similar pain before but not this intense.",
+            "Does this mean I should go to the emergency room?"
+          ];
+          
+          const response: Message = {
+            id: (Date.now() + 1).toString(),
+            content: responses[Math.floor(Math.random() * responses.length)],
+            sender: 'user',
+            timestamp: new Date(),
+            status: 'delivered'
+          };
+          
+          setMessages(prev => [...prev, response]);
+          
+          // Mark doctor's message as read
+          setTimeout(() => {
+            setMessages(prev => prev.map(msg => 
+              msg.id === newMessage.id ? { ...msg, status: 'read' } : msg
+            ));
+          }, 1000);
+        }, 3000);
+      }, 1000);
+    }, 1000);
   };
   
   return (
@@ -344,6 +399,11 @@ const Messages = () => {
               onSendMessage={handleSendMessage}
               placeholder="Type your message..."
               buttonText="Send"
+              recipientId="patient_123"
+              recipientName="John Doe" 
+              recipientAvatar="/avatars/patient.jpg"
+              recipientRole="Patient"
+              isTyping={isTyping}
             />
           </CardContent>
         </Card>
