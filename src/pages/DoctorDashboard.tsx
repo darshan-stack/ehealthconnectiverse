@@ -789,3 +789,322 @@ const DoctorDashboard = () => {
             <div className="p-3 bg-muted/30 border-b border-border/50">
               <h3 className="font-medium">Recent Conversations</h3>
             </div>
+            <div className="divide-y divide-border/50 max-h-[calc(100vh-20rem)] overflow-y-auto">
+              {patients.map((patient) => (
+                <div 
+                  key={patient.id}
+                  className="flex items-center gap-3 p-3 hover:bg-muted/30 cursor-pointer transition-colors"
+                  onClick={() => navigate(`/chat/${patient.id}`)}
+                >
+                  <div className="w-10 h-10 rounded-full overflow-hidden">
+                    <img 
+                      src={patient.avatar} 
+                      alt={patient.name} 
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex justify-between items-center">
+                      <h4 className="font-medium text-sm truncate">{patient.name}</h4>
+                      <span className="text-xs text-muted-foreground">2h ago</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground truncate">
+                      Latest message preview would appear here...
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card className="lg:col-span-2 overflow-hidden border-border/50 flex flex-col">
+          <CardContent className="p-0 flex-1 flex flex-col">
+            <div className="p-3 bg-muted/30 border-b border-border/50 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full overflow-hidden">
+                <img 
+                  src="https://ui-avatars.com/api/?name=Rahul+Mehta&background=FF453A&color=fff" 
+                  alt="Patient" 
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div>
+                <h3 className="font-medium">Rahul Mehta</h3>
+                <p className="text-xs text-muted-foreground">Last active 10 minutes ago</p>
+              </div>
+            </div>
+            
+            <div className="flex-1 p-4 overflow-y-auto bg-secondary/30">
+              <ChatInterface 
+                chatId="demo" 
+                placeholder="Type your medical advice or questions here..."
+                buttonText="Send Message"
+              />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+  
+  // Appointments component
+  const DashboardAppointments = () => (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold">Appointments</h2>
+        <div className="flex gap-2">
+          <Button variant="outline" className="text-primary border-primary/20">
+            <Calendar className="h-4 w-4 mr-2" />
+            View Calendar
+          </Button>
+          <Button className="bg-primary hover:bg-primary/90 text-white">
+            <Plus className="h-4 w-4 mr-2" />
+            New Appointment
+          </Button>
+        </div>
+      </div>
+      
+      <Tabs defaultValue="upcoming">
+        <TabsList className="mb-6">
+          <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
+          <TabsTrigger value="past">Past</TabsTrigger>
+          <TabsTrigger value="canceled">Canceled</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="upcoming">
+          <Card>
+            <CardContent className="p-0">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border/50">
+                    <th className="px-4 py-3 text-left font-medium">Patient</th>
+                    <th className="px-4 py-3 text-left font-medium">Date & Time</th>
+                    <th className="px-4 py-3 text-left font-medium">Purpose</th>
+                    <th className="px-4 py-3 text-left font-medium">Status</th>
+                    <th className="px-4 py-3 text-left font-medium">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border/50">
+                  {todayAppointments
+                    .filter(app => app.status === 'Scheduled')
+                    .map((appointment) => (
+                    <tr key={appointment.id} className="hover:bg-muted/30 transition-colors">
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                            <User className="h-4 w-4 text-primary" />
+                          </div>
+                          <span className="font-medium">{appointment.patientName}</span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-muted-foreground">
+                        Today, {appointment.time}
+                      </td>
+                      <td className="px-4 py-3">
+                        {appointment.purpose}
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className={`px-2 py-1 rounded text-xs inline-block ${getAppointmentStatusColor(appointment.status)}`}>
+                          {appointment.status}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex gap-2">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            className="text-xs"
+                          >
+                            <CheckCircle2 className="h-3 w-3 mr-1" />
+                            Start
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            className="text-xs"
+                          >
+                            <XCircle className="h-3 w-3 mr-1" />
+                            Cancel
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="past">
+          <Card>
+            <CardContent className="p-0">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border/50">
+                    <th className="px-4 py-3 text-left font-medium">Patient</th>
+                    <th className="px-4 py-3 text-left font-medium">Date & Time</th>
+                    <th className="px-4 py-3 text-left font-medium">Purpose</th>
+                    <th className="px-4 py-3 text-left font-medium">Status</th>
+                    <th className="px-4 py-3 text-left font-medium">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border/50">
+                  {todayAppointments
+                    .filter(app => app.status === 'Completed')
+                    .map((appointment) => (
+                    <tr key={appointment.id} className="hover:bg-muted/30 transition-colors">
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                            <User className="h-4 w-4 text-primary" />
+                          </div>
+                          <span className="font-medium">{appointment.patientName}</span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-muted-foreground">
+                        Today, {appointment.time}
+                      </td>
+                      <td className="px-4 py-3">
+                        {appointment.purpose}
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className={`px-2 py-1 rounded text-xs inline-block ${getAppointmentStatusColor(appointment.status)}`}>
+                          {appointment.status}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          className="text-xs"
+                          onClick={() => navigate(`/chat/${appointment.patientId}`)}
+                        >
+                          <MessageSquare className="h-3 w-3 mr-1" />
+                          Follow Up
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="canceled">
+          <Card>
+            <CardContent className="p-6 text-center">
+              <p className="text-muted-foreground">No canceled appointments.</p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+  
+  // Settings component
+  const DashboardSettings = () => (
+    <div className="space-y-6">
+      <h2 className="text-2xl font-bold">Settings</h2>
+      
+      <Card>
+        <CardHeader>
+          <CardTitle>Profile Settings</CardTitle>
+          <CardDescription>Manage your doctor profile information</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground">Profile settings form would go here</p>
+        </CardContent>
+      </Card>
+      
+      <Card>
+        <CardHeader>
+          <CardTitle>Account Settings</CardTitle>
+          <CardDescription>Manage your account preferences</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground">Account settings options would go here</p>
+        </CardContent>
+      </Card>
+      
+      <Card>
+        <CardHeader>
+          <CardTitle>Notification Preferences</CardTitle>
+          <CardDescription>Choose how you want to be notified</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground">Notification settings would go here</p>
+        </CardContent>
+      </Card>
+    </div>
+  );
+  
+  // Main component rendering
+  return (
+    <>
+      <Navbar />
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex flex-col md:flex-row gap-6">
+          {/* Sidebar */}
+          <div className="md:w-64 bg-white shadow-sm rounded-lg p-4 h-fit border border-border/50">
+            <div className="space-y-1">
+              <Button
+                variant={activeTab === 'overview' ? 'default' : 'ghost'}
+                className={`w-full justify-start ${activeTab === 'overview' ? 'bg-primary text-white' : ''}`}
+                onClick={() => setActiveTab('overview')}
+              >
+                <Activity className="mr-2 h-4 w-4" />
+                Overview
+              </Button>
+              <Button
+                variant={activeTab === 'patients' ? 'default' : 'ghost'}
+                className={`w-full justify-start ${activeTab === 'patients' ? 'bg-primary text-white' : ''}`}
+                onClick={() => setActiveTab('patients')}
+              >
+                <Users className="mr-2 h-4 w-4" />
+                Patients
+              </Button>
+              <Button
+                variant={activeTab === 'appointments' ? 'default' : 'ghost'}
+                className={`w-full justify-start ${activeTab === 'appointments' ? 'bg-primary text-white' : ''}`}
+                onClick={() => setActiveTab('appointments')}
+              >
+                <Calendar className="mr-2 h-4 w-4" />
+                Appointments
+              </Button>
+              <Button
+                variant={activeTab === 'messages' ? 'default' : 'ghost'}
+                className={`w-full justify-start ${activeTab === 'messages' ? 'bg-primary text-white' : ''}`}
+                onClick={() => setActiveTab('messages')}
+              >
+                <MessageSquare className="mr-2 h-4 w-4" />
+                Messages
+              </Button>
+              <Button
+                variant={activeTab === 'settings' ? 'default' : 'ghost'}
+                className={`w-full justify-start ${activeTab === 'settings' ? 'bg-primary text-white' : ''}`}
+                onClick={() => setActiveTab('settings')}
+              >
+                <Settings className="mr-2 h-4 w-4" />
+                Settings
+              </Button>
+            </div>
+          </div>
+          
+          {/* Main content */}
+          <div className="flex-1">
+            {activeTab === 'overview' && <DashboardHome />}
+            {activeTab === 'patients' && <DashboardPatients />}
+            {activeTab === 'appointments' && <DashboardAppointments />}
+            {activeTab === 'messages' && <DashboardMessages />}
+            {activeTab === 'settings' && <DashboardSettings />}
+          </div>
+        </div>
+      </div>
+      <Footer />
+    </>
+  );
+};
+
+export default DoctorDashboard;
