@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
 import { Card, CardContent } from "@/components/ui/card";
@@ -172,7 +171,6 @@ const Dashboard = () => {
           <div className="text-3xl font-bold">5</div>
           <p className="text-muted-foreground text-sm mt-2">3 urgent</p>
         </CardContent>
-      </Card>
       
       <Card className="md:col-span-2">
         <CardContent className="p-6">
@@ -295,19 +293,19 @@ const Messages = () => {
     },
     {
       id: '2',
-      content: 'I'm sorry to hear that. Can you describe the pain? Is it sharp or dull? Does it radiate to other areas?',
+      content: "I'm sorry to hear that. Can you describe the pain? Is it sharp or dull? Does it radiate to other areas?",
       sender: 'doctor',
       timestamp: new Date(Date.now() - 3500000)
     },
     {
       id: '3',
-      content: 'It's a sharp pain, mostly on the left side. Sometimes it goes down my left arm.',
+      content: "It's a sharp pain, mostly on the left side. Sometimes it goes down my left arm.",
       sender: 'user',
       timestamp: new Date(Date.now() - 3400000)
     },
     {
       id: '4',
-      content: 'That could be concerning. How long have you been experiencing this? And do you have any history of heart problems?',
+      content: "That could be concerning. How long have you been experiencing this? And do you have any history of heart problems?",
       sender: 'doctor',
       timestamp: new Date(Date.now() - 3300000)
     }
@@ -327,7 +325,7 @@ const Messages = () => {
     setTimeout(() => {
       const response: Message = {
         id: (Date.now() + 1).toString(),
-        content: 'Thank you for the information, doctor. I'll follow your advice.',
+        content: "Thank you for the information, doctor. I'll follow your advice.",
         sender: 'user',
         timestamp: new Date()
       };
