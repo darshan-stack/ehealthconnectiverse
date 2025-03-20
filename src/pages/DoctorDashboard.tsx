@@ -4,9 +4,27 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, Clock, Home, MessageSquare, Users, FileText, Settings, Bell, Search } from 'lucide-react';
+import { 
+  Calendar, 
+  Clock, 
+  Home, 
+  MessageSquare, 
+  Users, 
+  FileText, 
+  Settings, 
+  Bell, 
+  Search,
+  Ambulance,
+  Government,
+  Hospital,
+  BookOpen
+} from 'lucide-react';
 import ChatInterface, { Message } from '@/components/ChatInterface';
 import DoctorDirectory from '@/components/DoctorDirectory';
+import ResearchPaperSharing from '@/components/ResearchPaperSharing';
+import EmergencyServices from '@/components/EmergencyServices';
+import GovernmentSchemes from '@/components/GovernmentSchemes';
+import HospitalTracking from '@/components/HospitalTracking';
 import { useToast } from "@/components/ui/use-toast";
 
 const DoctorDashboard = () => {
@@ -21,7 +39,7 @@ const DoctorDashboard = () => {
 
   return (
     <div className="flex h-screen bg-background">
-      <Sidebar />
+      <Sidebar activeTab={activeTab} />
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header />
         <Tabs 
@@ -51,6 +69,14 @@ const DoctorDashboard = () => {
                 <FileText className="h-4 w-4 mr-2" />
                 Records
               </TabsTrigger>
+              <TabsTrigger value="emergency" className="data-[state=active]:bg-background">
+                <Ambulance className="h-4 w-4 mr-2" />
+                Emergency
+              </TabsTrigger>
+              <TabsTrigger value="research" className="data-[state=active]:bg-background">
+                <BookOpen className="h-4 w-4 mr-2" />
+                Research
+              </TabsTrigger>
             </TabsList>
           </div>
           <div className="flex-1 overflow-auto p-4">
@@ -69,6 +95,25 @@ const DoctorDashboard = () => {
             <TabsContent value="records" className="h-full mt-0">
               <Records />
             </TabsContent>
+            <TabsContent value="emergency" className="h-full mt-0">
+              <EmergencyServices />
+            </TabsContent>
+            <TabsContent value="research" className="h-full mt-0">
+              <ResearchPaperSharing 
+                currentUser={{
+                  id: 'doctor_1',
+                  name: 'Dr. Sarah Chen',
+                  specialty: 'Cardiologist',
+                  avatar: '/avatars/doctor.jpg',
+                }}
+              />
+            </TabsContent>
+            <TabsContent value="schemes" className="h-full mt-0">
+              <GovernmentSchemes />
+            </TabsContent>
+            <TabsContent value="hospital" className="h-full mt-0">
+              <HospitalTracking />
+            </TabsContent>
           </div>
         </Tabs>
       </div>
@@ -76,7 +121,7 @@ const DoctorDashboard = () => {
   );
 };
 
-const Sidebar = () => {
+const Sidebar = ({ activeTab }: { activeTab: string }) => {
   return (
     <div className="w-64 border-r bg-sidebar p-4 flex flex-col">
       <div className="flex items-center gap-2 mb-8">
@@ -88,31 +133,117 @@ const Sidebar = () => {
       
       <div className="flex-1">
         <nav className="space-y-1">
-          <Link to="/doctor" className="flex items-center gap-3 px-3 py-2 rounded-md bg-sidebar-accent text-sidebar-accent-foreground">
+          <Link 
+            to="/doctor" 
+            className={`flex items-center gap-3 px-3 py-2 rounded-md ${
+              activeTab === 'dashboard' 
+                ? 'bg-sidebar-accent text-sidebar-accent-foreground' 
+                : 'text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors'
+            }`}
+          >
             <Home className="h-5 w-5" />
             <span>Dashboard</span>
           </Link>
-          <Link to="/doctor/appointments" className="flex items-center gap-3 px-3 py-2 rounded-md text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors">
+          <Link 
+            to="/doctor/appointments" 
+            className={`flex items-center gap-3 px-3 py-2 rounded-md ${
+              activeTab === 'appointments' 
+                ? 'bg-sidebar-accent text-sidebar-accent-foreground' 
+                : 'text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors'
+            }`}
+          >
             <Calendar className="h-5 w-5" />
             <span>Appointments</span>
           </Link>
-          <Link to="/doctor/patients" className="flex items-center gap-3 px-3 py-2 rounded-md text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors">
+          <Link 
+            to="/doctor/patients" 
+            className={`flex items-center gap-3 px-3 py-2 rounded-md ${
+              activeTab === 'patients' 
+                ? 'bg-sidebar-accent text-sidebar-accent-foreground' 
+                : 'text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors'
+            }`}
+          >
             <Users className="h-5 w-5" />
             <span>Patients</span>
           </Link>
-          <Link to="/doctor/messages" className="flex items-center gap-3 px-3 py-2 rounded-md text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors">
+          <Link 
+            to="/doctor/messages" 
+            className={`flex items-center gap-3 px-3 py-2 rounded-md ${
+              activeTab === 'messages' 
+                ? 'bg-sidebar-accent text-sidebar-accent-foreground' 
+                : 'text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors'
+            }`}
+          >
             <MessageSquare className="h-5 w-5" />
             <span>Messages</span>
           </Link>
-          <Link to="/doctor/records" className="flex items-center gap-3 px-3 py-2 rounded-md text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors">
+          <Link 
+            to="/doctor/records" 
+            className={`flex items-center gap-3 px-3 py-2 rounded-md ${
+              activeTab === 'records' 
+                ? 'bg-sidebar-accent text-sidebar-accent-foreground' 
+                : 'text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors'
+            }`}
+          >
             <FileText className="h-5 w-5" />
             <span>Records</span>
+          </Link>
+          <Link 
+            to="/doctor/emergency" 
+            className={`flex items-center gap-3 px-3 py-2 rounded-md ${
+              activeTab === 'emergency' 
+                ? 'bg-sidebar-accent text-sidebar-accent-foreground' 
+                : 'text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors'
+            }`}
+          >
+            <Ambulance className="h-5 w-5" />
+            <span>Emergency</span>
+          </Link>
+          <Link 
+            to="/doctor/research" 
+            className={`flex items-center gap-3 px-3 py-2 rounded-md ${
+              activeTab === 'research' 
+                ? 'bg-sidebar-accent text-sidebar-accent-foreground' 
+                : 'text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors'
+            }`}
+          >
+            <BookOpen className="h-5 w-5" />
+            <span>Research</span>
+          </Link>
+          <Link 
+            to="/doctor/schemes" 
+            className={`flex items-center gap-3 px-3 py-2 rounded-md ${
+              activeTab === 'schemes' 
+                ? 'bg-sidebar-accent text-sidebar-accent-foreground' 
+                : 'text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors'
+            }`}
+          >
+            <Government className="h-5 w-5" />
+            <span>Gov Schemes</span>
+          </Link>
+          <Link 
+            to="/doctor/hospital" 
+            className={`flex items-center gap-3 px-3 py-2 rounded-md ${
+              activeTab === 'hospital' 
+                ? 'bg-sidebar-accent text-sidebar-accent-foreground' 
+                : 'text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors'
+            }`}
+          >
+            <Hospital className="h-5 w-5" />
+            <span>Hospital Status</span>
           </Link>
         </nav>
       </div>
       
       <div className="border-t pt-4">
-        <Link to="/doctor/settings" className="flex items-center gap-3 px-3 py-2 rounded-md text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors">
+        <Link 
+          to="/doctor/settings" 
+          className={`flex items-center gap-3 px-3 py-2 rounded-md ${
+            activeTab === 'settings' 
+              ? 'bg-sidebar-accent text-sidebar-accent-foreground' 
+              : 'text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors'
+          }`}
+        >
           <Settings className="h-5 w-5" />
           <span>Settings</span>
         </Link>

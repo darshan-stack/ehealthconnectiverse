@@ -14,7 +14,20 @@ import {
   CommandItem, 
   CommandList 
 } from "@/components/ui/command";
-import { FileText, Stethoscope, Pill, FlaskConical, Brain, Heart } from "lucide-react";
+import { 
+  FileText, 
+  Stethoscope, 
+  Pill, 
+  FlaskConical, 
+  Brain, 
+  Heart, 
+  Clipboard, 
+  ScanLine, 
+  Leaf, 
+  Bone, 
+  Microscope,
+  BookOpen
+} from "lucide-react";
 
 interface MedicalMessageTemplatesProps {
   onSelectTemplate: (template: string) => void;
@@ -63,6 +76,11 @@ const MedicalMessageTemplates: React.FC<MedicalMessageTemplatesProps> = ({ onSel
           id: "treatment-3",
           name: "Surgery Preparation",
           content: "To prepare for your upcoming surgery:\n\n1. Pre-surgery instructions: \n2. Fasting requirements: \n3. Medications to avoid: \n4. What to bring: \n\nThe surgery is scheduled for: "
+        },
+        {
+          id: "treatment-4",
+          name: "Ayurveda Recommendations",
+          content: "Based on Ayurvedic principles, I recommend the following:\n\n1. Dietary changes: \n2. Herbs and supplements: \n3. Daily practices: \n4. Lifestyle modifications: \n\nThese recommendations aim to balance your doshas and promote natural healing."
         }
       ]
     },
@@ -79,6 +97,11 @@ const MedicalMessageTemplates: React.FC<MedicalMessageTemplatesProps> = ({ onSel
           id: "lab-2",
           name: "Abnormal Lab Results",
           content: "I've reviewed your lab results, and there are some values that require attention:\n\n- Abnormal findings: \n- Possible implications: \n- Recommended next steps: \n\nLet's schedule a follow-up to discuss these findings in detail."
+        },
+        {
+          id: "lab-3",
+          name: "Radiology Results",
+          content: "I've reviewed your imaging results:\n\n- Type of scan: \n- Findings: \n- Impression: \n\nBased on these results, I recommend: "
         }
       ]
     },
@@ -95,6 +118,11 @@ const MedicalMessageTemplates: React.FC<MedicalMessageTemplatesProps> = ({ onSel
           id: "cardiac-2",
           name: "Cardiac Symptoms Inquiry",
           content: "Regarding your cardiac symptoms:\n\n1. How would you describe the chest pain/discomfort? (sharp, dull, pressure, etc.)\n2. Does it radiate to other areas like your arm, jaw, or back?\n3. Is it associated with exertion?\n4. How long does it typically last?\n5. Do you experience shortness of breath, dizziness, or palpitations with it?"
+        },
+        {
+          id: "cardiac-3",
+          name: "Cardiovascular Risk Assessment",
+          content: "Based on your risk factors and clinical findings, your cardiovascular risk assessment is as follows:\n\n- Major risk factors: \n- 10-year cardiovascular risk score: \n- Risk category: \n\nRecommendations to reduce risk: "
         }
       ]
     },
@@ -111,6 +139,105 @@ const MedicalMessageTemplates: React.FC<MedicalMessageTemplatesProps> = ({ onSel
           id: "neuro-2",
           name: "Headache Assessment",
           content: "Headache Assessment:\n\n1. Location: \n2. Quality: \n3. Intensity (1-10): \n4. Duration: \n5. Associated symptoms: \n6. Triggers: \n7. Relieving factors: \n\nImpression: "
+        },
+        {
+          id: "neuro-3",
+          name: "Cognitive Assessment",
+          content: "Cognitive Assessment Results:\n\n- Orientation: \n- Attention: \n- Memory: \n- Language: \n- Executive function: \n- Visuospatial ability: \n\nImpression and recommendations: "
+        }
+      ]
+    },
+    {
+      category: "Mental Health",
+      icon: <Clipboard className="h-4 w-4 mr-2" />,
+      items: [
+        {
+          id: "mental-1",
+          name: "Depression Screening",
+          content: "Depression Screening Results:\n\n- PHQ-9 Score: \n- Key symptoms noted: \n- Risk assessment: \n\nRecommendations: "
+        },
+        {
+          id: "mental-2",
+          name: "Anxiety Assessment",
+          content: "Anxiety Assessment:\n\n- GAD-7 Score: \n- Key symptoms noted: \n- Functional impact: \n\nRecommended approach: "
+        },
+        {
+          id: "mental-3",
+          name: "Stress Management",
+          content: "Stress Management Recommendations:\n\n1. Mindfulness practices: \n2. Physical activity: \n3. Sleep hygiene: \n4. Cognitive techniques: \n5. Social support: \n\nAdditional resources: "
+        },
+        {
+          id: "mental-4",
+          name: "Therapy Referral",
+          content: "I'm referring you to therapy for further support with your mental health:\n\n- Type of therapy recommended: \n- Frequency: \n- Expected duration: \n- Goals: \n\nIn the meantime, please continue with: "
+        }
+      ]
+    },
+    {
+      category: "Imaging",
+      icon: <ScanLine className="h-4 w-4 mr-2" />,
+      items: [
+        {
+          id: "imaging-1",
+          name: "X-Ray Report",
+          content: "X-Ray Report:\n\n- Area examined: \n- Findings: \n- Impression: \n\nRecommendations based on these findings: "
+        },
+        {
+          id: "imaging-2",
+          name: "MRI Report",
+          content: "MRI Report:\n\n- Area examined: \n- Technique: \n- Findings: \n- Impression: \n\nRecommendations based on these findings: "
+        },
+        {
+          id: "imaging-3",
+          name: "CT Scan Report",
+          content: "CT Scan Report:\n\n- Area examined: \n- Technique: \n- Findings: \n- Impression: \n\nRecommendations based on these findings: "
+        },
+        {
+          id: "imaging-4",
+          name: "Ultrasound Report",
+          content: "Ultrasound Report:\n\n- Area examined: \n- Findings: \n- Impression: \n\nRecommendations based on these findings: "
+        }
+      ]
+    },
+    {
+      category: "Specialty Consultations",
+      icon: <Microscope className="h-4 w-4 mr-2" />,
+      items: [
+        {
+          id: "specialty-1",
+          name: "Specialist Referral",
+          content: "I'm referring you to a specialist for further evaluation and management:\n\n- Specialty: \n- Reason for referral: \n- Specific questions to address: \n- Relevant history and findings: \n\nPlease bring the following to your appointment: "
+        },
+        {
+          id: "specialty-2",
+          name: "Multidisciplinary Discussion",
+          content: "After discussing your case with our multidisciplinary team, we recommend:\n\n- Key findings discussed: \n- Team consensus: \n- Recommended approach: \n- Next steps: \n\nWe believe this comprehensive approach will provide the best care for your condition."
+        },
+        {
+          id: "specialty-3",
+          name: "Second Opinion Request",
+          content: "Based on the complexity of your condition, I recommend obtaining a second opinion:\n\n- Areas of uncertainty: \n- Specific questions to address: \n- Recommended specialist type: \n\nThis additional perspective will help ensure you receive optimal care."
+        }
+      ]
+    },
+    {
+      category: "Research & Education",
+      icon: <BookOpen className="h-4 w-4 mr-2" />,
+      items: [
+        {
+          id: "research-1",
+          name: "Literature Review",
+          content: "Recent literature on this topic suggests:\n\n1. Key findings: \n2. Clinical implications: \n3. Limitations of current evidence: \n\nHow this applies to your case: "
+        },
+        {
+          id: "research-2",
+          name: "Clinical Trial Information",
+          content: "There is a clinical trial that might be relevant to your condition:\n\n- Trial name/ID: \n- Purpose: \n- Eligibility criteria: \n- Potential benefits/risks: \n- Location and contact: \n\nWould you like more information about participating?"
+        },
+        {
+          id: "research-3",
+          name: "Case Presentation",
+          content: "Case Presentation Summary:\n\n- Patient demographics: \n- Presenting complaint: \n- Relevant history: \n- Physical examination: \n- Investigations: \n- Diagnosis: \n- Management: \n- Outcome: \n- Discussion points: \n\nLearning points from this case: "
         }
       ]
     }
