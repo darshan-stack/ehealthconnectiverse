@@ -1,733 +1,592 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Slider } from "@/components/ui/slider";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Music, Play, Pause, SkipForward, SkipBack, Heart, Volume2, Youtube, ArrowUpRight, Clock, Smile, Frown, Meh, ThumbsUp, List, Loader2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
-import { 
-  Brain, 
-  Heart, 
-  Activity, 
-  Music, 
-  Moon, 
-  Sun, 
-  ThumbsUp, 
-  Smile, 
-  Frown, 
-  Meh, 
-  Lightbulb, 
-  Calendar, 
-  Leaf, 
-  MessageSquare, 
-  Play, 
-  Pause,
-  SkipForward,
-  Volume2
-} from "lucide-react";
 
-interface MeditationSession {
-  id: string;
-  title: string;
-  duration: string;
-  category: string;
-  image: string;
-  description: string;
-}
+// Mock relaxation music data from YouTube
+const youtubeVideos = [
+  {
+    id: 'y7e-GC-o_e4',
+    title: 'Relaxing Music with Nature Sounds - Waterfall HD',
+    channel: 'Meditation Music',
+    duration: '3:00:15',
+    views: '14M',
+    thumbnail: 'https://img.youtube.com/vi/y7e-GC-o_e4/hqdefault.jpg'
+  },
+  {
+    id: '77ZozI0rw7w',
+    title: 'Relaxing Piano Music: Sleep, Study, Stress Relief, Meditation',
+    channel: 'Yellow Brick Cinema',
+    duration: '2:59:48',
+    views: '22M',
+    thumbnail: 'https://img.youtube.com/vi/77ZozI0rw7w/hqdefault.jpg'
+  },
+  {
+    id: 'lFcSrYw-ARY',
+    title: 'Deep Sleep Music: Ocean Waves, Fall Asleep Fast',
+    channel: 'Sleep Easy Relax',
+    duration: '3:06:19',
+    views: '9M',
+    thumbnail: 'https://img.youtube.com/vi/lFcSrYw-ARY/hqdefault.jpg'
+  },
+  {
+    id: 'V1RPi2MYptM',
+    title: 'Beautiful Relaxing Music for Stress Relief',
+    channel: 'Meditation Relaxation',
+    duration: '2:23:14',
+    views: '12M',
+    thumbnail: 'https://img.youtube.com/vi/V1RPi2MYptM/hqdefault.jpg'
+  },
+];
 
-interface MoodEntry {
-  date: Date;
-  mood: 'great' | 'good' | 'neutral' | 'bad' | 'terrible';
-  notes?: string;
-  sleepHours?: number;
-  stressLevel?: number;
-  activities?: string[];
-}
+// Mock Spotify playlists
+const spotifyPlaylists = [
+  {
+    id: '37i9dQZF1DX3Ogo9pFvBkY',
+    name: 'Ambient Relaxation',
+    description: 'Calm ambient and soft instrumental music',
+    coverImage: 'https://i.scdn.co/image/ab67706f00000002d9e2e0086ee1a794b511d5e9',
+    songs: 50,
+    duration: '2hr 45min'
+  },
+  {
+    id: '37i9dQZF1DWSiZVO2J6WeI',
+    name: 'Peaceful Piano',
+    description: 'Peaceful piano to help you slow down, breathe, and relax',
+    coverImage: 'https://i.scdn.co/image/ab67706f00000002ca5a7517156021292e5663a4',
+    songs: 224,
+    duration: '13hr 25min'
+  },
+  {
+    id: '37i9dQZF1DX4PP3DA4J0N8',
+    name: 'Daily Wellness',
+    description: 'Music and wellness to get you through your day',
+    coverImage: 'https://dailymix-images.scdn.co/v2/img/ab6761610000e5ebcfc10e4a33b20ec6448807bb/3/en/default',
+    songs: 75,
+    duration: '4hr 10min'
+  },
+  {
+    id: '37i9dQZF1DX9uKNf5jGX6m',
+    name: 'Relaxing Meditation',
+    description: 'Ambient for deep relaxation and meditation',
+    coverImage: 'https://i.scdn.co/image/ab67706f000000025fafad3a15dcad8f61d81d34',
+    songs: 66,
+    duration: '3hr 53min'
+  },
+];
+
+// Motivational quotes
+const motivationalQuotes = [
+  {
+    quote: "Your mental health is a priority. Your happiness is essential. Your self-care is a necessity.",
+    author: "Unknown"
+  },
+  {
+    quote: "You don't have to be positive all the time. It's perfectly okay to feel sad, angry, annoyed, frustrated, scared, or anxious. Having feelings doesn't make you a negative person. It makes you human.",
+    author: "Lori Deschene"
+  },
+  {
+    quote: "Mental health problems don't define who you are. They are something you experience, but they are not you.",
+    author: "Dr. Gail Saltz"
+  },
+  {
+    quote: "There is hope, even when your brain tells you there isn't.",
+    author: "John Green"
+  },
+  {
+    quote: "You are not alone in this journey. Millions are walking alongside you, even when you can't see them.",
+    author: "Mental Health Foundation"
+  }
+];
+
+// Mood tracking options
+const moodOptions = [
+  { value: "happy", label: "Happy", icon: <Smile className="text-green-500" /> },
+  { value: "neutral", label: "Neutral", icon: <Meh className="text-amber-500" /> },
+  { value: "sad", label: "Sad", icon: <Frown className="text-blue-500" /> },
+  { value: "anxious", label: "Anxious", icon: <Loader2 className="text-purple-500" /> },
+  { value: "energetic", label: "Energetic", icon: <ThumbsUp className="text-orange-500" /> }
+];
+
+// Daily activities for mental wellness
+const dailyActivities = [
+  { id: "act1", name: "5-Minute Meditation", completed: false, description: "Take 5 minutes to focus on your breath and clear your mind" },
+  { id: "act2", name: "Daily Gratitude", completed: false, description: "Write down three things you're grateful for today" },
+  { id: "act3", name: "Physical Movement", completed: false, description: "Take a short walk or do some stretching exercises" },
+  { id: "act4", name: "Connect with Someone", completed: false, description: "Have a meaningful conversation with a friend or family member" },
+  { id: "act5", name: "Digital Detox", completed: false, description: "Spend 30 minutes away from screens and digital devices" }
+];
 
 const MentalHealthSupport: React.FC = () => {
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState('mood');
-  const [currentMood, setCurrentMood] = useState<string | null>(null);
-  const [sleepHours, setSleepHours] = useState<number>(7);
-  const [stressLevel, setStressLevel] = useState<number>(3);
-  const [moodNote, setMoodNote] = useState('');
-  const [selectedActivities, setSelectedActivities] = useState<string[]>([]);
-  const [activeSession, setActiveSession] = useState<MeditationSession | null>(null);
+  const [activeTab, setActiveTab] = useState("overview");
+  const [currentVideoId, setCurrentVideoId] = useState("");
   const [isPlaying, setIsPlaying] = useState(false);
-  const [volume, setVolume] = useState(70);
-  const [moodHistory, setMoodHistory] = useState<MoodEntry[]>([
-    { date: new Date(Date.now() - 86400000 * 1), mood: 'good', sleepHours: 7, stressLevel: 4, activities: ['Exercise', 'Reading'] },
-    { date: new Date(Date.now() - 86400000 * 2), mood: 'neutral', sleepHours: 6, stressLevel: 6, activities: ['Work', 'Social Media'] },
-    { date: new Date(Date.now() - 86400000 * 3), mood: 'great', sleepHours: 8, stressLevel: 2, activities: ['Exercise', 'Family Time', 'Meditation'] },
-    { date: new Date(Date.now() - 86400000 * 4), mood: 'bad', sleepHours: 5, stressLevel: 7, activities: ['Work', 'Caffeine'] },
-    { date: new Date(Date.now() - 86400000 * 5), mood: 'good', sleepHours: 7.5, stressLevel: 4, activities: ['Reading', 'Music'] },
-    { date: new Date(Date.now() - 86400000 * 6), mood: 'neutral', sleepHours: 6.5, stressLevel: 5, activities: ['Work', 'Exercise'] },
-  ]);
+  const [currentQuoteIndex, setCurrentQuoteIndex] = useState(0);
+  const [selectedMood, setSelectedMood] = useState("");
+  const [moodNote, setMoodNote] = useState("");
+  const [activities, setActivities] = useState(dailyActivities);
+  const [showVideoDialog, setShowVideoDialog] = useState(false);
+  const [completedActivities, setCompletedActivities] = useState(0);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   
-  const activities = [
-    'Exercise', 'Work', 'Reading', 'Meditation', 'Social Media', 
-    'Family Time', 'Friend Time', 'Music', 'Nature', 'Caffeine'
-  ];
-  
-  const meditationSessions: MeditationSession[] = [
-    {
-      id: 'med1',
-      title: 'Morning Mindfulness',
-      duration: '10 min',
-      category: 'Mindfulness',
-      image: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8bWVkaXRhdGlvbnxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=500&q=60',
-      description: 'Start your day with clarity and purpose through this gentle mindfulness meditation.'
-    },
-    {
-      id: 'med2',
-      title: 'Stress Relief Breathing',
-      duration: '5 min',
-      category: 'Breathing',
-      image: 'https://images.unsplash.com/photo-1474418397713-7ede21d49118?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8YnJlYXRoaW5nfGVufDB8fDB8fHww&auto=format&fit=crop&w=500&q=60',
-      description: 'A quick breathing exercise designed to reduce stress and anxiety in the moment.'
-    },
-    {
-      id: 'med3',
-      title: 'Deep Sleep Relaxation',
-      duration: '20 min',
-      category: 'Sleep',
-      image: 'https://images.unsplash.com/photo-1455642305367-68834a1da7ab?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8c2xlZXB8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=500&q=60',
-      description: 'Prepare your mind and body for a restful night with this calming sleep meditation.'
-    },
-    {
-      id: 'med4',
-      title: 'Anxiety Relief',
-      duration: '15 min',
-      category: 'Anxiety',
-      image: 'https://images.unsplash.com/photo-1507413245164-6160d8298b31?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8cGVhY2V8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=500&q=60',
-      description: 'Gentle guidance to help manage anxiety and find your center during difficult moments.'
-    },
-    {
-      id: 'med5',
-      title: 'Body Scan Relaxation',
-      duration: '12 min',
-      category: 'Relaxation',
-      image: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8cmVsYXh8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=500&q=60',
-      description: 'Progressive relaxation technique to release tension throughout your entire body.'
-    },
-    {
-      id: 'med6',
-      title: 'Gratitude Practice',
-      duration: '8 min',
-      category: 'Gratitude',
-      image: 'https://images.unsplash.com/photo-1447078806655-40579c2520d6?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8Z3JhdGl0dWRlfGVufDB8fDB8fHww&auto=format&fit=crop&w=500&q=60',
-      description: 'Cultivate an attitude of gratitude to enhance wellbeing and positive emotions.'
-    }
-  ];
-  
-  const therapists = [
-    {
-      id: 'therapist1',
-      name: 'Dr. Arjun Kapoor',
-      specialty: 'Clinical Psychologist',
-      experience: '12 years',
-      image: 'https://ui-avatars.com/api/?name=Arjun+Kapoor&background=0A84FF&color=fff',
-      available: true,
-      nextSlot: 'Today, 4:00 PM'
-    },
-    {
-      id: 'therapist2',
-      name: 'Dr. Maya Sharma',
-      specialty: 'Psychiatrist',
-      experience: '8 years',
-      image: 'https://ui-avatars.com/api/?name=Maya+Sharma&background=FF9F0A&color=fff',
-      available: false,
-      nextSlot: 'Tomorrow, 11:30 AM'
-    },
-    {
-      id: 'therapist3',
-      name: 'Dr. Raj Malhotra',
-      specialty: 'Anxiety Specialist',
-      experience: '15 years',
-      image: 'https://ui-avatars.com/api/?name=Raj+Malhotra&background=30D158&color=fff',
-      available: true,
-      nextSlot: 'Today, 6:15 PM'
-    }
-  ];
-  
-  const getMoodIcon = (mood: string) => {
-    switch (mood) {
-      case 'great':
-        return <ThumbsUp className="h-6 w-6 text-green-500" />;
-      case 'good':
-        return <Smile className="h-6 w-6 text-green-400" />;
-      case 'neutral':
-        return <Meh className="h-6 w-6 text-amber-400" />;
-      case 'bad':
-        return <Frown className="h-6 w-6 text-orange-500" />;
-      case 'terrible':
-        return <Frown className="h-6 w-6 text-red-500" fill="currentColor" />;
-      default:
-        return null;
-    }
+  // Function to toggle YouTube video playing
+  const handlePlayVideo = (videoId: string) => {
+    setCurrentVideoId(videoId);
+    setShowVideoDialog(true);
   };
   
-  const getMoodColor = (mood: string) => {
-    switch (mood) {
-      case 'great':
-        return 'bg-green-500';
-      case 'good':
-        return 'bg-green-400';
-      case 'neutral':
-        return 'bg-amber-400';
-      case 'bad':
-        return 'bg-orange-500';
-      case 'terrible':
-        return 'bg-red-500';
-      default:
-        return 'bg-gray-400';
-    }
-  };
-  
+  // Function to handle mood tracking
   const handleMoodSelection = (mood: string) => {
-    setCurrentMood(mood);
+    setSelectedMood(mood);
+    toast({
+      title: "Mood Tracked",
+      description: `Your mood has been recorded as ${mood}.`,
+    });
   };
   
-  const handleActivityToggle = (activity: string) => {
-    if (selectedActivities.includes(activity)) {
-      setSelectedActivities(selectedActivities.filter(a => a !== activity));
-    } else {
-      setSelectedActivities([...selectedActivities, activity]);
-    }
-  };
-  
-  const handleSubmitMood = () => {
-    if (!currentMood) {
+  // Function to submit mood note
+  const handleMoodNoteSubmit = () => {
+    if (moodNote.trim()) {
       toast({
-        title: "Please select a mood",
-        description: "You need to select how you're feeling today.",
-        variant: "destructive",
+        title: "Note Saved",
+        description: "Your mood note has been saved.",
+        variant: "success",
       });
-      return;
-    }
-    
-    const newEntry: MoodEntry = {
-      date: new Date(),
-      mood: currentMood as any,
-      sleepHours,
-      stressLevel,
-      activities: selectedActivities,
-      notes: moodNote.trim() || undefined
-    };
-    
-    setMoodHistory([newEntry, ...moodHistory]);
-    
-    // Reset form
-    setCurrentMood(null);
-    setSleepHours(7);
-    setStressLevel(3);
-    setSelectedActivities([]);
-    setMoodNote('');
-    
-    toast({
-      title: "Mood tracked successfully",
-      description: "Your mood entry has been saved to your history.",
-    });
-  };
-  
-  const handlePlaySession = (session: MeditationSession) => {
-    setActiveSession(session);
-    setIsPlaying(true);
-    
-    toast({
-      title: "Session started",
-      description: `Now playing: ${session.title}`,
-    });
-  };
-  
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric'
-    });
-  };
-  
-  const calculateMoodTrend = () => {
-    if (moodHistory.length < 2) return 'neutral';
-    
-    const moodValues = {
-      'terrible': 1,
-      'bad': 2,
-      'neutral': 3,
-      'good': 4,
-      'great': 5
-    };
-    
-    const recentMoods = moodHistory.slice(0, 3);
-    const recentAvg = recentMoods.reduce((sum, entry) => sum + moodValues[entry.mood], 0) / recentMoods.length;
-    
-    const olderMoods = moodHistory.slice(3, 6);
-    if (olderMoods.length === 0) return 'neutral';
-    
-    const olderAvg = olderMoods.reduce((sum, entry) => sum + moodValues[entry.mood], 0) / olderMoods.length;
-    
-    if (recentAvg > olderAvg + 0.5) return 'improving';
-    if (recentAvg < olderAvg - 0.5) return 'declining';
-    return 'stable';
-  };
-  
-  const getTrendText = () => {
-    const trend = calculateMoodTrend();
-    switch (trend) {
-      case 'improving':
-        return 'Your mood has been improving recently!';
-      case 'declining':
-        return 'Your mood has been declining recently. Consider trying some self-care activities.';
-      case 'stable':
-        return 'Your mood has been relatively stable recently.';
-      default:
-        return '';
+      setMoodNote("");
     }
   };
   
-  const getPersonalizedRecommendations = () => {
-    if (moodHistory.length === 0) return [];
-    
-    const recentMood = moodHistory[0];
-    const recommendations = [];
-    
-    if (recentMood.mood === 'bad' || recentMood.mood === 'terrible') {
-      recommendations.push('Try the "Anxiety Relief" meditation session');
-      recommendations.push('Schedule a consultation with a mental health specialist');
-      
-      if (recentMood.sleepHours < 6) {
-        recommendations.push('Focus on improving your sleep. Try the "Deep Sleep Relaxation" session');
+  // Function to toggle activity completion
+  const handleToggleActivity = (activityId: string) => {
+    setActivities(activities.map(activity => {
+      if (activity.id === activityId) {
+        const newCompleted = !activity.completed;
+        
+        // Update completed activities count
+        setCompletedActivities(prev => newCompleted ? prev + 1 : prev - 1);
+        
+        return {
+          ...activity,
+          completed: newCompleted
+        };
       }
-    }
-    
-    if (recentMood.stressLevel > 6) {
-      recommendations.push('Practice the "Stress Relief Breathing" technique');
-      recommendations.push('Consider taking short breaks throughout your day');
-    }
-    
-    if (!recentMood.activities?.includes('Exercise')) {
-      recommendations.push('Try to incorporate light exercise into your routine');
-    }
-    
-    if (!recentMood.activities?.includes('Nature')) {
-      recommendations.push('Spending time in nature can improve your mood');
-    }
-    
-    // If we don't have specific recommendations based on the data, provide general ones
-    if (recommendations.length === 0) {
-      recommendations.push('Continue with your current wellness routine');
-      recommendations.push('Try the "Morning Mindfulness" session to start your day');
-      recommendations.push('Regular gratitude practice can further improve your mood');
-    }
-    
-    return recommendations.slice(0, 3); // Return top 3 recommendations
+      return activity;
+    }));
+  };
+  
+  // Function to cycle through quotes
+  const handleNextQuote = () => {
+    setCurrentQuoteIndex((currentQuoteIndex + 1) % motivationalQuotes.length);
   };
   
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Mental Health & Wellness</h2>
+        <h2 className="text-2xl font-bold">Mental Health Support</h2>
+        <div className="flex gap-2">
+          <Button 
+            variant="outline"
+            onClick={handleNextQuote}
+            className="border-primary/30 text-primary"
+          >
+            New Quote
+          </Button>
+        </div>
       </div>
       
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid grid-cols-3 w-full md:w-[400px]">
-          <TabsTrigger value="mood" className="flex items-center">
-            <Heart className="h-4 w-4 mr-2" />
-            Mood Tracking
-          </TabsTrigger>
-          <TabsTrigger value="meditation" className="flex items-center">
-            <Brain className="h-4 w-4 mr-2" />
-            Meditation
-          </TabsTrigger>
-          <TabsTrigger value="therapy" className="flex items-center">
-            <MessageSquare className="h-4 w-4 mr-2" />
-            Therapy
-          </TabsTrigger>
+      {/* Daily Quote Card */}
+      <Card className="bg-gradient-to-br from-blue-50 to-purple-50 border border-blue-100">
+        <CardContent className="p-6">
+          <div className="flex flex-col items-center text-center">
+            <p className="text-lg italic mb-4 text-slate-700">
+              "{motivationalQuotes[currentQuoteIndex].quote}"
+            </p>
+            <p className="text-sm text-slate-500">
+              — {motivationalQuotes[currentQuoteIndex].author}
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+      
+      <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="music">Relaxing Music</TabsTrigger>
+          <TabsTrigger value="tracker">Mood Tracker</TabsTrigger>
+          <TabsTrigger value="activities">Daily Activities</TabsTrigger>
         </TabsList>
         
-        <TabsContent value="mood" className="mt-6">
-          <div className="grid gap-6 md:grid-cols-2">
+        {/* Overview Tab */}
+        <TabsContent value="overview" className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Card>
-              <CardHeader>
-                <CardTitle>How are you feeling today?</CardTitle>
-                <CardDescription>Track your mood and factors that might be affecting it</CardDescription>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Music className="h-5 w-5 text-primary" />
+                  Relaxation Music
+                </CardTitle>
+                <CardDescription>Listen to relaxing music to reduce stress and anxiety</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-5">
-                <div>
-                  <Label className="mb-2 block">Select your mood</Label>
-                  <div className="flex justify-between gap-2">
-                    {['great', 'good', 'neutral', 'bad', 'terrible'].map(mood => (
-                      <Button
-                        key={mood}
-                        variant={currentMood === mood ? "default" : "outline"}
-                        className="flex-1 flex-col h-auto py-2"
-                        onClick={() => handleMoodSelection(mood)}
-                      >
-                        {mood === 'great' && <ThumbsUp className="h-6 w-6 mb-1" />}
-                        {mood === 'good' && <Smile className="h-6 w-6 mb-1" />}
-                        {mood === 'neutral' && <Meh className="h-6 w-6 mb-1" />}
-                        {mood === 'bad' && <Frown className="h-6 w-6 mb-1" />}
-                        {mood === 'terrible' && <Frown className="h-6 w-6 mb-1" fill="currentColor" />}
-                        <span className="text-xs capitalize">{mood}</span>
-                      </Button>
-                    ))}
-                  </div>
-                </div>
-                
-                <div>
-                  <Label className="mb-2 block">Hours of sleep last night: {sleepHours}</Label>
-                  <Slider 
-                    value={[sleepHours]} 
-                    min={0} 
-                    max={12} 
-                    step={0.5} 
-                    onValueChange={(values) => setSleepHours(values[0])}
-                  />
-                </div>
-                
-                <div>
-                  <Label className="mb-2 block">Stress level: {stressLevel}/10</Label>
-                  <Slider 
-                    value={[stressLevel]} 
-                    min={1} 
-                    max={10} 
-                    step={1} 
-                    onValueChange={(values) => setStressLevel(values[0])}
-                  />
-                </div>
-                
-                <div>
-                  <Label className="mb-2 block">Activities today (select all that apply)</Label>
-                  <div className="flex flex-wrap gap-2">
-                    {activities.map(activity => (
-                      <Badge 
-                        key={activity}
-                        variant={selectedActivities.includes(activity) ? "default" : "outline"}
-                        className="cursor-pointer"
-                        onClick={() => handleActivityToggle(activity)}
-                      >
-                        {activity}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-                
-                <div>
-                  <Label className="mb-2 block">Notes (optional)</Label>
-                  <Textarea 
-                    placeholder="Add any notes about your day or mood..."
-                    value={moodNote}
-                    onChange={(e) => setMoodNote(e.target.value)}
-                  />
+              <CardContent className="pb-2">
+                <div className="space-y-2">
+                  {youtubeVideos.slice(0, 2).map(video => (
+                    <div 
+                      key={video.id} 
+                      className="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 cursor-pointer transition-colors"
+                      onClick={() => handlePlayVideo(video.id)}
+                    >
+                      <div className="w-16 h-16 rounded overflow-hidden relative">
+                        <img 
+                          src={video.thumbnail} 
+                          alt={video.title}
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                          <Play className="h-6 w-6 text-white" />
+                        </div>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-medium truncate text-sm">{video.title}</h4>
+                        <p className="text-xs text-muted-foreground">{video.channel}</p>
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
+                          <Clock className="h-3 w-3" />
+                          <span>{video.duration}</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </CardContent>
               <CardFooter>
-                <Button onClick={handleSubmitMood} className="w-full">
-                  Save Mood Entry
+                <Button
+                  variant="ghost"
+                  className="w-full text-primary"
+                  onClick={() => setActiveTab("music")}
+                >
+                  View All Music
                 </Button>
               </CardFooter>
             </Card>
             
-            <div className="space-y-6">
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle>Mood History</CardTitle>
-                  <CardDescription>Your mood patterns over time</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <ScrollArea className="h-[215px]">
-                    <div className="space-y-3">
-                      {moodHistory.map((entry, index) => (
-                        <div key={index} className="flex items-center gap-3 pb-3 border-b last:border-0 last:pb-0">
-                          <div className={`h-10 w-10 rounded-full flex items-center justify-center ${getMoodColor(entry.mood)}`}>
-                            {getMoodIcon(entry.mood)}
-                          </div>
-                          <div className="flex-1">
-                            <div className="flex justify-between items-start">
-                              <div>
-                                <p className="font-medium capitalize">{entry.mood}</p>
-                                <p className="text-xs text-muted-foreground">{formatDate(entry.date)}</p>
-                              </div>
-                              <div className="text-right text-xs text-muted-foreground">
-                                <p>Sleep: {entry.sleepHours}h</p>
-                                <p>Stress: {entry.stressLevel}/10</p>
-                              </div>
-                            </div>
-                            {entry.activities && entry.activities.length > 0 && (
-                              <div className="flex flex-wrap gap-1 mt-1">
-                                {entry.activities.slice(0, 3).map((activity, idx) => (
-                                  <Badge key={idx} variant="secondary" className="text-xs">{activity}</Badge>
-                                ))}
-                                {entry.activities.length > 3 && (
-                                  <Badge variant="secondary" className="text-xs">+{entry.activities.length - 3}</Badge>
-                                )}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </ScrollArea>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle>Insights & Recommendations</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="border rounded-md p-3">
-                      <p className="text-sm font-medium flex items-center gap-2">
-                        <Activity className="h-4 w-4 text-blue-500" />
-                        Mood Trend
-                      </p>
-                      <p className="text-sm text-muted-foreground mt-1">{getTrendText()}</p>
-                    </div>
-                    
-                    <div>
-                      <p className="text-sm font-medium flex items-center gap-2 mb-2">
-                        <Lightbulb className="h-4 w-4 text-amber-500" />
-                        Personalized Recommendations
-                      </p>
-                      <ul className="space-y-2">
-                        {getPersonalizedRecommendations().map((recommendation, index) => (
-                          <li key={index} className="text-sm flex gap-2 items-start">
-                            <Leaf className="h-4 w-4 text-green-500 mt-0.5" />
-                            <span>{recommendation}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </TabsContent>
-        
-        <TabsContent value="meditation" className="mt-6">
-          <div className="grid gap-6 md:grid-cols-3">
-            {meditationSessions.map(session => (
-              <Card key={session.id} className="overflow-hidden">
-                <div className="aspect-video w-full overflow-hidden">
-                  <img 
-                    src={session.image} 
-                    alt={session.title} 
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <CardHeader className="pb-2">
-                  <div className="flex justify-between items-start">
-                    <CardTitle className="text-lg">{session.title}</CardTitle>
-                    <Badge variant="outline">{session.duration}</Badge>
-                  </div>
-                  <CardDescription>{session.category}</CardDescription>
-                </CardHeader>
-                <CardContent className="pb-2">
-                  <p className="text-sm text-muted-foreground">{session.description}</p>
-                </CardContent>
-                <CardFooter>
-                  <Button 
-                    className="w-full gap-2"
-                    onClick={() => handlePlaySession(session)}
-                  >
-                    <Play className="h-4 w-4" />
-                    Begin Session
-                  </Button>
-                </CardFooter>
-              </Card>
-            ))}
-          </div>
-          
-          {/* Meditation Player Dialog */}
-          {activeSession && (
-            <Dialog open={!!activeSession} onOpenChange={(open) => !open && setActiveSession(null)}>
-              <DialogContent className="max-w-md">
-                <DialogHeader>
-                  <DialogTitle>{activeSession.title}</DialogTitle>
-                  <DialogDescription>
-                    {activeSession.duration} • {activeSession.category}
-                  </DialogDescription>
-                </DialogHeader>
-                
-                <div className="space-y-4">
-                  <div className="aspect-video w-full overflow-hidden rounded-md">
-                    <img 
-                      src={activeSession.image} 
-                      alt={activeSession.title} 
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  
-                  <div className="space-y-3">
-                    <div className="text-center">
-                      <p className="text-2xl font-medium">9:45</p>
-                      <p className="text-xs text-muted-foreground">remaining</p>
-                    </div>
-                    
-                    <Progress value={isPlaying ? 25 : 0} className="h-1" />
-                    
-                    <div className="flex justify-center items-center gap-4">
-                      <Button variant="outline" size="icon" className="rounded-full h-10 w-10">
-                        <SkipForward className="h-4 w-4" />
-                      </Button>
-                      <Button 
-                        size="icon" 
-                        className="rounded-full h-12 w-12"
-                        onClick={() => setIsPlaying(!isPlaying)}
-                      >
-                        {isPlaying ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
-                      </Button>
-                      <Button variant="outline" size="icon" className="rounded-full h-10 w-10">
-                        <SkipForward className="h-4 w-4" transform="scale(-1, 1)" />
-                      </Button>
-                    </div>
-                    
-                    <div className="flex items-center gap-3">
-                      <Volume2 className="h-4 w-4 text-muted-foreground" />
-                      <Slider 
-                        value={[volume]} 
-                        min={0} 
-                        max={100} 
-                        step={1} 
-                        onValueChange={(values) => setVolume(values[0])}
-                      />
-                    </div>
-                  </div>
-                </div>
-                
-                <DialogFooter className="flex flex-col sm:flex-row gap-2">
-                  <Button variant="outline" onClick={() => setActiveSession(null)} className="sm:flex-1">
-                    Close
-                  </Button>
-                  <Button className="sm:flex-1">Save to Favorites</Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-          )}
-        </TabsContent>
-        
-        <TabsContent value="therapy" className="mt-6">
-          <div className="grid gap-6 md:grid-cols-2">
             <Card>
-              <CardHeader>
-                <CardTitle>Mental Health Consultation</CardTitle>
-                <CardDescription>Connect with licensed mental health professionals</CardDescription>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Smile className="h-5 w-5 text-primary" />
+                  Mood Tracker
+                </CardTitle>
+                <CardDescription>Track your mood patterns over time</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
-                {therapists.map(therapist => (
-                  <div key={therapist.id} className="flex items-center justify-between border-b pb-4 last:border-0 last:pb-0">
-                    <div className="flex items-center gap-3">
-                      <div className="h-12 w-12 rounded-full overflow-hidden">
+              <CardContent className="pb-2">
+                <div className="flex justify-between mb-4">
+                  {moodOptions.map(mood => (
+                    <button
+                      key={mood.value}
+                      className={`flex flex-col items-center p-2 rounded-lg ${
+                        selectedMood === mood.value ? 'bg-primary/10 border border-primary/30' : 'hover:bg-slate-50'
+                      }`}
+                      onClick={() => handleMoodSelection(mood.value)}
+                    >
+                      <div className="h-10 w-10 rounded-full bg-slate-100 flex items-center justify-center mb-1">
+                        {React.cloneElement(mood.icon, { className: `h-6 w-6 ${selectedMood === mood.value ? 'text-primary' : ''}` })}
+                      </div>
+                      <span className="text-xs">{mood.label}</span>
+                    </button>
+                  ))}
+                </div>
+                <Input
+                  value={moodNote}
+                  onChange={(e) => setMoodNote(e.target.value)}
+                  placeholder="Add note about your mood..."
+                  className="mb-2"
+                />
+              </CardContent>
+              <CardFooter>
+                <Button
+                  onClick={handleMoodNoteSubmit}
+                  disabled={!moodNote.trim()}
+                  className="w-full"
+                >
+                  Save Mood
+                </Button>
+              </CardFooter>
+            </Card>
+            
+            <Card className="md:col-span-2">
+              <CardHeader className="pb-2">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <List className="h-5 w-5 text-primary" />
+                      Daily Wellness Activities
+                    </CardTitle>
+                    <CardDescription>Complete these activities to improve your mental well-being</CardDescription>
+                  </div>
+                  <Badge variant="outline" className="bg-green-50 text-green-600 border-green-200">
+                    {completedActivities}/{activities.length} Completed
+                  </Badge>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <Progress value={(completedActivities / activities.length) * 100} className="h-2 mb-4" />
+                <div className="space-y-3">
+                  {activities.slice(0, 3).map(activity => (
+                    <div 
+                      key={activity.id}
+                      className="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 cursor-pointer transition-colors"
+                      onClick={() => handleToggleActivity(activity.id)}
+                    >
+                      <div className={`h-5 w-5 rounded-full border flex items-center justify-center ${
+                        activity.completed ? 'bg-green-500 border-green-500' : 'border-slate-300'
+                      }`}>
+                        {activity.completed && <ThumbsUp className="h-3 w-3 text-white" />}
+                      </div>
+                      <div>
+                        <h4 className={`font-medium text-sm ${activity.completed ? 'line-through text-muted-foreground' : ''}`}>
+                          {activity.name}
+                        </h4>
+                        <p className="text-xs text-muted-foreground">{activity.description}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+              <CardFooter>
+                <Button
+                  variant="ghost"
+                  className="w-full text-primary"
+                  onClick={() => setActiveTab("activities")}
+                >
+                  View All Activities
+                </Button>
+              </CardFooter>
+            </Card>
+          </div>
+        </TabsContent>
+        
+        {/* Music Tab */}
+        <TabsContent value="music" className="space-y-4">
+          <Tabs defaultValue="youtube" className="w-full">
+            <TabsList className="w-full max-w-md mb-4">
+              <TabsTrigger value="youtube" className="flex-1">
+                <Youtube className="h-4 w-4 mr-2" />
+                YouTube
+              </TabsTrigger>
+              <TabsTrigger value="spotify" className="flex-1">
+                <Music className="h-4 w-4 mr-2" />
+                Spotify
+              </TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="youtube" className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {youtubeVideos.map(video => (
+                  <Card key={video.id} className="hover:shadow-md transition-shadow overflow-hidden">
+                    <div className="aspect-video relative cursor-pointer" onClick={() => handlePlayVideo(video.id)}>
+                      <img 
+                        src={video.thumbnail} 
+                        alt={video.title}
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/30 hover:bg-black/40 transition-colors">
+                        <Play className="h-12 w-12 text-white" />
+                      </div>
+                    </div>
+                    <CardContent className="p-4">
+                      <h3 className="font-medium line-clamp-1">{video.title}</h3>
+                      <p className="text-sm text-muted-foreground">{video.channel}</p>
+                      <div className="flex items-center justify-between mt-2 text-xs text-muted-foreground">
+                        <div className="flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
+                          <span>{video.duration}</span>
+                        </div>
+                        <span>{video.views} views</span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="spotify" className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {spotifyPlaylists.map(playlist => (
+                  <Card key={playlist.id} className="hover:shadow-md transition-shadow overflow-hidden">
+                    <div className="flex h-full">
+                      <div className="w-1/3 aspect-square">
                         <img 
-                          src={therapist.image} 
-                          alt={therapist.name} 
+                          src={playlist.coverImage} 
+                          alt={playlist.name}
                           className="w-full h-full object-cover"
                         />
                       </div>
-                      <div>
-                        <p className="font-medium">{therapist.name}</p>
-                        <p className="text-sm text-muted-foreground">{therapist.specialty}</p>
-                        <p className="text-xs text-muted-foreground">{therapist.experience} experience</p>
-                      </div>
+                      <CardContent className="p-4 flex-1">
+                        <h3 className="font-medium line-clamp-1">{playlist.name}</h3>
+                        <p className="text-xs text-muted-foreground line-clamp-2 mb-2">{playlist.description}</p>
+                        <div className="space-y-1 text-xs text-muted-foreground">
+                          <div className="flex items-center gap-1">
+                            <Music className="h-3 w-3" />
+                            <span>{playlist.songs} songs</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Clock className="h-3 w-3" />
+                            <span>{playlist.duration}</span>
+                          </div>
+                        </div>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="mt-3"
+                          onClick={() => window.open(`https://open.spotify.com/playlist/${playlist.id}`, '_blank')}
+                        >
+                          Open in Spotify
+                        </Button>
+                      </CardContent>
                     </div>
-                    <div className="text-right">
-                      {therapist.available ? (
-                        <Badge className="mb-2 bg-green-500">Available Now</Badge>
-                      ) : (
-                        <Badge variant="outline" className="mb-2">Next: {therapist.nextSlot}</Badge>
-                      )}
-                      <Button size="sm" className="w-full">
-                        {therapist.available ? 'Consult Now' : 'Schedule'}
-                      </Button>
+                  </Card>
+                ))}
+              </div>
+            </TabsContent>
+          </Tabs>
+        </TabsContent>
+        
+        {/* Mood Tracker Tab */}
+        <TabsContent value="tracker" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Track Your Mood</CardTitle>
+              <CardDescription>Keeping track of your mood can help identify patterns and triggers</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-5 gap-2">
+                {moodOptions.map(mood => (
+                  <button
+                    key={mood.value}
+                    className={`flex flex-col items-center p-3 rounded-lg ${
+                      selectedMood === mood.value ? 'bg-primary/10 border border-primary/30' : 'hover:bg-slate-50 border border-transparent'
+                    }`}
+                    onClick={() => handleMoodSelection(mood.value)}
+                  >
+                    <div className="h-12 w-12 rounded-full bg-slate-100 flex items-center justify-center mb-2">
+                      {React.cloneElement(mood.icon, { className: `h-7 w-7 ${selectedMood === mood.value ? 'text-primary' : ''}` })}
+                    </div>
+                    <span className="text-sm font-medium">{mood.label}</span>
+                  </button>
+                ))}
+              </div>
+              
+              <Separator />
+              
+              <div className="space-y-3">
+                <h3 className="text-sm font-medium">Add a note about your current mood</h3>
+                <textarea
+                  value={moodNote}
+                  onChange={(e) => setMoodNote(e.target.value)}
+                  placeholder="How are you feeling today? What might have influenced your mood?"
+                  className="w-full min-h-[120px] rounded-md border border-input bg-transparent px-3 py-2 text-sm placeholder:text-muted-foreground"
+                />
+              </div>
+              
+              <Button 
+                onClick={handleMoodNoteSubmit}
+                disabled={!selectedMood || !moodNote.trim()}
+                className="w-full"
+              >
+                Save Mood Entry
+              </Button>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader>
+              <CardTitle>Mood History</CardTitle>
+              <CardDescription>Your recent mood entries</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center py-4">
+                <p className="text-muted-foreground">Start tracking your mood to see your history here.</p>
+                <p className="text-sm text-muted-foreground mt-1">Regular tracking helps identify patterns over time.</p>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        {/* Activities Tab */}
+        <TabsContent value="activities" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <div className="flex justify-between items-start">
+                <div>
+                  <CardTitle>Daily Wellness Activities</CardTitle>
+                  <CardDescription>Complete these activities to improve your mental well-being</CardDescription>
+                </div>
+                <Badge variant="outline" className="bg-green-50 text-green-600 border-green-200">
+                  {completedActivities}/{activities.length} Completed
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <Progress value={(completedActivities / activities.length) * 100} className="h-2 mb-6" />
+              <div className="space-y-4">
+                {activities.map(activity => (
+                  <div 
+                    key={activity.id}
+                    className={`p-4 rounded-lg border ${
+                      activity.completed ? 'bg-green-50 border-green-200' : 'hover:bg-slate-50 cursor-pointer'
+                    }`}
+                    onClick={() => handleToggleActivity(activity.id)}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className={`h-5 w-5 rounded-full border flex-shrink-0 flex items-center justify-center mt-0.5 ${
+                        activity.completed ? 'bg-green-500 border-green-500' : 'border-slate-300'
+                      }`}>
+                        {activity.completed && <ThumbsUp className="h-3 w-3 text-white" />}
+                      </div>
+                      <div>
+                        <h4 className={`font-medium ${activity.completed ? 'line-through text-muted-foreground' : ''}`}>
+                          {activity.name}
+                        </h4>
+                        <p className="text-sm text-muted-foreground mt-1">{activity.description}</p>
+                      </div>
                     </div>
                   </div>
                 ))}
-              </CardContent>
-              <CardFooter className="flex-col items-start">
-                <p className="text-sm text-muted-foreground mb-2">
-                  Need urgent mental health support?
-                </p>
-                <Button variant="outline" asChild className="w-full">
-                  <a href="tel:1800599599">
-                    Mental Health Helpline: 1800-599-599
-                  </a>
-                </Button>
-              </CardFooter>
-            </Card>
-            
-            <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Self-Assessment</CardTitle>
-                  <CardDescription>Take a quick assessment to understand your mental health better</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="border rounded-md p-3 flex gap-3 items-start">
-                      <Brain className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                      <div>
-                        <p className="font-medium">Mental Health Screening</p>
-                        <p className="text-sm text-muted-foreground mb-2">
-                          A comprehensive assessment to identify signs of anxiety, depression, and stress.
-                        </p>
-                        <Button size="sm">Start Assessment</Button>
-                      </div>
-                    </div>
-                    
-                    <div className="border rounded-md p-3 flex gap-3 items-start">
-                      <Activity className="h-5 w-5 text-blue-500 flex-shrink-0 mt-0.5" />
-                      <div>
-                        <p className="font-medium">Stress Level Test</p>
-                        <p className="text-sm text-muted-foreground mb-2">
-                          Quickly gauge your current stress levels and get personalized recommendations.
-                        </p>
-                        <Button size="sm" variant="outline">Take Test</Button>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardHeader>
-                  <CardTitle>Resources</CardTitle>
-                  <CardDescription>Articles and guides for mental well-being</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div className="border rounded-md p-3">
-                      <p className="font-medium">Understanding Anxiety</p>
-                      <p className="text-sm text-muted-foreground">Learn about common anxiety triggers and coping strategies.</p>
-                      <Button variant="link" className="p-0 h-auto mt-1">Read More</Button>
-                    </div>
-                    
-                    <div className="border rounded-md p-3">
-                      <p className="font-medium">Sleep and Mental Health</p>
-                      <p className="text-sm text-muted-foreground">Discover the connection between sleep quality and mental well-being.</p>
-                      <Button variant="link" className="p-0 h-auto mt-1">Read More</Button>
-                    </div>
-                    
-                    <div className="border rounded-md p-3">
-                      <p className="font-medium">Mindfulness for Beginners</p>
-                      <p className="text-sm text-muted-foreground">Simple mindfulness techniques you can practice anywhere.</p>
-                      <Button variant="link" className="p-0 h-auto mt-1">Read More</Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
+      
+      {/* YouTube Video Dialog */}
+      <Dialog open={showVideoDialog} onOpenChange={setShowVideoDialog}>
+        <DialogContent className="sm:max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>
+              {youtubeVideos.find(v => v.id === currentVideoId)?.title || "Relaxing Music"}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="aspect-video">
+            <iframe
+              width="100%"
+              height="100%"
+              src={`https://www.youtube.com/embed/${currentVideoId}?autoplay=1`}
+              title="YouTube video player"
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            ></iframe>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

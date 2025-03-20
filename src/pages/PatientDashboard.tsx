@@ -5,6 +5,10 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import RecordCard from '@/components/RecordCard';
 import ChatInterface from '@/components/ChatInterface';
+import VideoConsultation from '@/components/VideoConsultation';
+import SocialFeed from '@/components/SocialFeed';
+import GovernmentSchemes from '@/components/GovernmentSchemes';
+import MentalHealthSupport from '@/components/MentalHealthSupport';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -22,6 +26,10 @@ import {
   BarChart3,
   Clock,
   AlertCircle,
+  Video,
+  Share2,
+  FileBarChart,
+  HeartPulse,
 } from 'lucide-react';
 
 // Demo doctors for the patient dashboard
@@ -545,6 +553,26 @@ const PatientDashboard = () => {
       </div>
     </div>
   );
+
+  // Video Consultation component 
+  const DashboardConsultation = () => (
+    <VideoConsultation />
+  );
+
+  // Social Feed component
+  const DashboardSocialFeed = () => (
+    <SocialFeed />
+  );
+
+  // Government Schemes component
+  const DashboardGovernmentSchemes = () => (
+    <GovernmentSchemes />
+  );
+
+  // Mental Health Support component
+  const DashboardMentalHealth = () => (
+    <MentalHealthSupport />
+  );
   
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -579,6 +607,16 @@ const PatientDashboard = () => {
                       Messages
                     </Button>
                     <Button
+                      variant={activeTab === 'consultation' ? 'default' : 'ghost'}
+                      className={`w-full justify-start ${
+                        activeTab === 'consultation' ? 'bg-primary text-white' : ''
+                      }`}
+                      onClick={() => setActiveTab('consultation')}
+                    >
+                      <Video className="mr-2 h-4 w-4" />
+                      Consultation
+                    </Button>
+                    <Button
                       variant={activeTab === 'records' ? 'default' : 'ghost'}
                       className={`w-full justify-start ${
                         activeTab === 'records' ? 'bg-primary text-white' : ''
@@ -607,6 +645,36 @@ const PatientDashboard = () => {
                     >
                       <Heart className="mr-2 h-4 w-4" />
                       Medications
+                    </Button>
+                    <Button
+                      variant={activeTab === 'social' ? 'default' : 'ghost'}
+                      className={`w-full justify-start ${
+                        activeTab === 'social' ? 'bg-primary text-white' : ''
+                      }`}
+                      onClick={() => setActiveTab('social')}
+                    >
+                      <Share2 className="mr-2 h-4 w-4" />
+                      Community
+                    </Button>
+                    <Button
+                      variant={activeTab === 'schemes' ? 'default' : 'ghost'}
+                      className={`w-full justify-start ${
+                        activeTab === 'schemes' ? 'bg-primary text-white' : ''
+                      }`}
+                      onClick={() => setActiveTab('schemes')}
+                    >
+                      <FileBarChart className="mr-2 h-4 w-4" />
+                      Govt. Schemes
+                    </Button>
+                    <Button
+                      variant={activeTab === 'mental' ? 'default' : 'ghost'}
+                      className={`w-full justify-start ${
+                        activeTab === 'mental' ? 'bg-primary text-white' : ''
+                      }`}
+                      onClick={() => setActiveTab('mental')}
+                    >
+                      <HeartPulse className="mr-2 h-4 w-4" />
+                      Mental Health
                     </Button>
                     <Button
                       variant={activeTab === 'profile' ? 'default' : 'ghost'}
@@ -638,6 +706,10 @@ const PatientDashboard = () => {
               {activeTab === 'overview' && <DashboardHome />}
               {activeTab === 'records' && <DashboardRecords />}
               {activeTab === 'messages' && <DashboardMessages />}
+              {activeTab === 'consultation' && <DashboardConsultation />}
+              {activeTab === 'social' && <DashboardSocialFeed />}
+              {activeTab === 'schemes' && <DashboardGovernmentSchemes />}
+              {activeTab === 'mental' && <DashboardMentalHealth />}
               {/* Other tabs would be added here */}
             </div>
           </div>
