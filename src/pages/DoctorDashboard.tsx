@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -840,3 +841,250 @@ const Appointments = () => {
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
+                          <SelectValue placeholder="Select type" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="General Checkup">General Checkup</SelectItem>
+                        <SelectItem value="Follow-up">Follow-up</SelectItem>
+                        <SelectItem value="Consultation">Consultation</SelectItem>
+                        <SelectItem value="Emergency">Emergency</SelectItem>
+                        <SelectItem value="Routine Check">Routine Check</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="date"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col">
+                      <FormLabel>Date</FormLabel>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant="outline"
+                              className="w-full pl-3 text-left font-normal"
+                            >
+                              {field.value ? (
+                                format(field.value, "PPP")
+                              ) : (
+                                <span>Pick a date</span>
+                              )}
+                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={field.value}
+                            onSelect={field.onChange}
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="time"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Time</FormLabel>
+                      <FormControl>
+                        <Input type="time" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <FormField
+                control={form.control}
+                name="notes"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Notes</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Enter any additional notes here"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <DialogFooter>
+                <Button type="submit">Create Appointment</Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Reschedule Dialog */}
+      <Dialog open={rescheduleOpen} onOpenChange={setRescheduleOpen}>
+        <DialogContent className="sm:max-w-[550px]">
+          <DialogHeader>
+            <DialogTitle>Reschedule Appointment</DialogTitle>
+            <DialogDescription>
+              {selectedAppointment ? `Reschedule appointment for ${selectedAppointment.patientName}` : 'Update appointment time'}
+            </DialogDescription>
+          </DialogHeader>
+          <Form {...rescheduleForm}>
+            <form onSubmit={submitReschedule} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={rescheduleForm.control}
+                  name="date"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col">
+                      <FormLabel>Date</FormLabel>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant="outline"
+                              className="w-full pl-3 text-left font-normal"
+                            >
+                              {field.value ? (
+                                format(field.value, "PPP")
+                              ) : (
+                                <span>Pick a date</span>
+                              )}
+                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={field.value}
+                            onSelect={field.onChange}
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={rescheduleForm.control}
+                  name="time"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Time</FormLabel>
+                      <FormControl>
+                        <Input type="time" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <FormField
+                control={rescheduleForm.control}
+                name="notes"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Notes</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Enter any additional notes here"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <DialogFooter>
+                <Button type="submit">Update Appointment</Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+};
+
+// Stub for Patients component
+const Patients = () => {
+  return (
+    <div>
+      <h2 className="text-2xl font-bold mb-6">Patients</h2>
+      <Card>
+        <CardContent className="p-6">
+          <div className="space-y-6">
+            {patientsData.map((patient) => (
+              <div key={patient.id} className="flex items-center justify-between border-b pb-6 last:border-0 last:pb-0">
+                <div className="flex items-center gap-4">
+                  <Avatar className="h-12 w-12">
+                    <AvatarFallback>{patient.name.charAt(0)}</AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="font-medium">{patient.name}</p>
+                    <p className="text-sm text-muted-foreground">{patient.age} years, {patient.gender}</p>
+                    <p className="text-xs text-muted-foreground mt-1">Last visit: {patient.lastVisit}</p>
+                  </div>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">ID: {patient.id}</p>
+                  <p className="text-sm">{patient.contact}</p>
+                  <p className="text-xs text-muted-foreground mt-1">{patient.medicalHistory}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
+// Stub for Messages component
+const Messages = () => {
+  const [messages, setMessages] = useState<Message[]>([
+    {id: 'msg1', sender: 'Dr. Sarah Chen', text: 'Hello, how are you feeling today?', timestamp: new Date(Date.now() - 3600000)},
+    {id: 'msg2', sender: 'Rajiv Kumar', text: 'Much better, doctor. The medication is helping.', timestamp: new Date(Date.now() - 3500000)},
+    {id: 'msg3', sender: 'Dr. Sarah Chen', text: 'Great! Any side effects?', timestamp: new Date(Date.now() - 3400000)},
+    {id: 'msg4', sender: 'Rajiv Kumar', text: 'Just a bit drowsy in the morning, but it's manageable.', timestamp: new Date(Date.now() - 3300000)},
+  ]);
+
+  return (
+    <ChatInterface 
+      messages={messages}
+      onSendMessage={(text) => {
+        const newMessage = {
+          id: `msg${Date.now()}`,
+          sender: 'Dr. Sarah Chen',
+          text,
+          timestamp: new Date()
+        };
+        setMessages([...messages, newMessage]);
+      }}
+      currentUser={{
+        id: 'doctor_1',
+        name: 'Dr. Sarah Chen',
+        avatar: '/avatars/doctor.jpg'
+      }}
+      contact={{
+        id: 'patient_1',
+        name: 'Rajiv Kumar',
+        avatar: null
+      }}
+    />
+  );
+};
+
+export default DoctorDashboard;
