@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -16,7 +16,12 @@ import {
   Search,
   Ambulance,
   Hospital,
-  BookOpen
+  BookOpen,
+  Pill,
+  FilePlus,
+  Phone,
+  Video,
+  Download
 } from 'lucide-react';
 import ChatInterface, { Message } from '@/components/ChatInterface';
 import DoctorDirectory from '@/components/DoctorDirectory';
@@ -25,6 +30,9 @@ import EmergencyServices from '@/components/EmergencyServices';
 import GovernmentSchemes from '@/components/GovernmentSchemes';
 import HospitalTracking from '@/components/HospitalTracking';
 import { useToast } from "@/components/ui/use-toast";
+import MedicalRecordsManager from '@/components/MedicalRecordsManager';
+import Prescription from '@/components/Prescription';
+import MedicationManager from '@/components/MedicationManager';
 
 const DoctorDashboard = () => {
   const location = useLocation();
@@ -68,13 +76,13 @@ const DoctorDashboard = () => {
                 <FileText className="h-4 w-4 mr-2" />
                 Records
               </TabsTrigger>
-              <TabsTrigger value="emergency" className="data-[state=active]:bg-background">
-                <Ambulance className="h-4 w-4 mr-2" />
-                Emergency
+              <TabsTrigger value="prescriptions" className="data-[state=active]:bg-background">
+                <FilePlus className="h-4 w-4 mr-2" />
+                Prescriptions
               </TabsTrigger>
-              <TabsTrigger value="research" className="data-[state=active]:bg-background">
-                <BookOpen className="h-4 w-4 mr-2" />
-                Research
+              <TabsTrigger value="medications" className="data-[state=active]:bg-background">
+                <Pill className="h-4 w-4 mr-2" />
+                Medications
               </TabsTrigger>
             </TabsList>
           </div>
@@ -92,7 +100,13 @@ const DoctorDashboard = () => {
               <Messages />
             </TabsContent>
             <TabsContent value="records" className="h-full mt-0">
-              <Records />
+              <MedicalRecordsManager />
+            </TabsContent>
+            <TabsContent value="prescriptions" className="h-full mt-0">
+              <Prescription />
+            </TabsContent>
+            <TabsContent value="medications" className="h-full mt-0">
+              <MedicationManager />
             </TabsContent>
             <TabsContent value="emergency" className="h-full mt-0">
               <EmergencyServices />
@@ -188,6 +202,28 @@ const Sidebar = ({ activeTab }: { activeTab: string }) => {
             <span>Records</span>
           </Link>
           <Link 
+            to="/doctor/prescriptions" 
+            className={`flex items-center gap-3 px-3 py-2 rounded-md ${
+              activeTab === 'prescriptions' 
+                ? 'bg-sidebar-accent text-sidebar-accent-foreground' 
+                : 'text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors'
+            }`}
+          >
+            <FilePlus className="h-5 w-5" />
+            <span>Prescriptions</span>
+          </Link>
+          <Link 
+            to="/doctor/medications" 
+            className={`flex items-center gap-3 px-3 py-2 rounded-md ${
+              activeTab === 'medications' 
+                ? 'bg-sidebar-accent text-sidebar-accent-foreground' 
+                : 'text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors'
+            }`}
+          >
+            <Pill className="h-5 w-5" />
+            <span>Medications</span>
+          </Link>
+          <Link 
             to="/doctor/emergency" 
             className={`flex items-center gap-3 px-3 py-2 rounded-md ${
               activeTab === 'emergency' 
@@ -262,12 +298,38 @@ const Sidebar = ({ activeTab }: { activeTab: string }) => {
 };
 
 const Header = () => {
+  const { toast } = useToast();
+  
+  const handleVideoCall = () => {
+    window.open(`tel:8010599511`, '_blank');
+    toast({
+      title: "Video Call",
+      description: "Initiating video call with 8010599511",
+    });
+  };
+  
+  const handleWhatsApp = () => {
+    window.open(`https://wa.me/8010599511`, '_blank');
+    toast({
+      title: "WhatsApp",
+      description: "Opening WhatsApp chat with 8010599511",
+    });
+  };
+  
   return (
     <header className="border-b h-14 flex items-center justify-between px-4">
       <div>
         <h2 className="text-lg font-semibold">Doctor Dashboard</h2>
       </div>
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2">
+        <Button variant="outline" size="sm" onClick={handleVideoCall}>
+          <Video className="h-4 w-4 mr-2" />
+          Video Call
+        </Button>
+        <Button variant="outline" size="sm" onClick={handleWhatsApp}>
+          <MessageSquare className="h-4 w-4 mr-2" />
+          WhatsApp
+        </Button>
         <Button variant="outline" size="icon" className="rounded-full">
           <Bell className="h-4 w-4" />
         </Button>
@@ -281,6 +343,26 @@ const Header = () => {
 };
 
 const Dashboard = () => {
+  const { toast } = useToast();
+  
+  const handleDownloadSample = () => {
+    toast({
+      title: "Sample Downloaded",
+      description: "Sample medical record document has been downloaded",
+    });
+    
+    // Create a sample PDF with demo data
+    const samplePDF = "data:application/pdf;base64,JVBERi0xLjcKJeLjz9MKNSAwIG9iago8PAovRmlsdGVyIC9GbGF0ZURlY29kZQovTGVuZ3RoIDM4Cj4+CnN0cmVhbQp4nCvkMlAwUDC1NNUzMVGwMDHUszRSKOQCABxHBD8KZW5kc3RyZWFtCmVuZG9iago0IDAgb2JqCjw8Ci9UeXBlIC9QYWdlCi9NZWRpYUJveCBbMCAwIDU5NS4yNzYgODQxLjg5XQovUmVzb3VyY2VzIDw8Pj4KL0NvbnRlbnRzIDUgMCBSCi9QYXJlbnQgMiAwIFIKPj4KZW5kb2JqCjIgMCBvYmoKPDwKL1R5cGUgL1BhZ2VzCi9LaWRzIFs0IDAgUl0KL0NvdW50IDEKPj4KZW5kb2JqCjEgMCBvYmoKPDwKL1R5cGUgL0NhdGFsb2cKL1BhZ2VzIDIgMCBSCj4+CmVuZG9iagp4cmVmCjAgNwowMDAwMDAwMDAwIDY1NTM1IGYgCjAwMDAwMDAyMjEgMDAwMDAgbiAKMDAwMDAwMDE3MiAwMDAwMCBuIAowMDAwMDAwMDAwIDAwMDAwIGYgCjAwMDAwMDAwNzMgMDAwMDAgbiAKMDAwMDAwMDAwMCAwMDAwMCBuIAowMDAwMDAwMjcwIDAwMDAwIG4gCnRyYWlsZXIKPDwKL1NpemUgNwovUm9vdCAxIDAgUgovSW5mbyA2IDAgUgo+PgpzdGFydHhyZWYKMzgxCiUlRU9GCg==";
+    
+    // Create download link
+    const downloadLink = document.createElement("a");
+    downloadLink.href = samplePDF;
+    downloadLink.download = "sample-medical-record.pdf";
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    document.body.removeChild(downloadLink);
+  };
+  
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       <Card>
@@ -288,13 +370,15 @@ const Dashboard = () => {
           <h3 className="text-lg font-medium mb-2">Today's Appointments</h3>
           <div className="text-3xl font-bold">8</div>
           <p className="text-muted-foreground text-sm mt-2">2 more than yesterday</p>
+          <Button className="mt-4" variant="outline" size="sm">View All</Button>
         </CardContent>
       </Card>
       <Card>
         <CardContent className="p-6">
-          <h3 className="text-lg font-medium mb-2">Total Patients</h3>
+          <h3 className="text-lg font-medium mb-2">Patient Records</h3>
           <div className="text-3xl font-bold">248</div>
           <p className="text-muted-foreground text-sm mt-2">12 new this week</p>
+          <Button className="mt-4" variant="outline" size="sm">Manage Records</Button>
         </CardContent>
       </Card>
       <Card>
@@ -302,12 +386,16 @@ const Dashboard = () => {
           <h3 className="text-lg font-medium mb-2">Unread Messages</h3>
           <div className="text-3xl font-bold">5</div>
           <p className="text-muted-foreground text-sm mt-2">3 urgent</p>
+          <Button className="mt-4" variant="outline" size="sm">Open Inbox</Button>
         </CardContent>
       </Card>
       
       <Card className="md:col-span-2">
         <CardContent className="p-6">
-          <h3 className="text-lg font-medium mb-4">Upcoming Appointments</h3>
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-medium">Upcoming Appointments</h3>
+            <Button variant="outline" size="sm">View Calendar</Button>
+          </div>
           <div className="space-y-4">
             {[1, 2, 3].map((i) => (
               <div key={i} className="flex items-center justify-between border-b pb-4 last:border-0 last:pb-0">
@@ -320,9 +408,12 @@ const Dashboard = () => {
                     <p className="text-sm text-muted-foreground">General Checkup</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <Clock className="h-4 w-4 text-muted-foreground" />
-                  <span>10:0{i} AM</span>
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2 text-sm">
+                    <Clock className="h-4 w-4 text-muted-foreground" />
+                    <span>10:0{i} AM</span>
+                  </div>
+                  <Button size="sm">Start</Button>
                 </div>
               </div>
             ))}
@@ -331,18 +422,27 @@ const Dashboard = () => {
       </Card>
       
       <Card>
-        <CardContent className="p-6">
-          <h3 className="text-lg font-medium mb-4">Recent Activity</h3>
-          <div className="space-y-4">
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="flex items-start gap-3 border-b pb-4 last:border-0 last:pb-0">
-                <div className="w-2 h-2 rounded-full bg-primary mt-2" />
-                <div>
-                  <p className="text-sm">Updated patient records for <span className="font-medium">Patient {i}</span></p>
-                  <p className="text-xs text-muted-foreground">{i} hour{i !== 1 ? 's' : ''} ago</p>
-                </div>
-              </div>
-            ))}
+        <CardHeader>
+          <CardTitle className="text-lg">Quick Actions</CardTitle>
+        </CardHeader>
+        <CardContent className="p-6 pt-0">
+          <div className="space-y-2">
+            <Button className="w-full justify-start" variant="outline">
+              <FilePlus className="h-4 w-4 mr-2" />
+              Create Prescription
+            </Button>
+            <Button className="w-full justify-start" variant="outline">
+              <Users className="h-4 w-4 mr-2" />
+              Add New Patient
+            </Button>
+            <Button className="w-full justify-start" variant="outline" onClick={handleDownloadSample}>
+              <Download className="h-4 w-4 mr-2" />
+              Download Sample Record
+            </Button>
+            <Button className="w-full justify-start" variant="outline">
+              <Phone className="h-4 w-4 mr-2" />
+              Call 8010599511
+            </Button>
           </div>
         </CardContent>
       </Card>
