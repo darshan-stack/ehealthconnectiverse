@@ -4,8 +4,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Calendar, CalendarIcon } from "@/components/ui/calendar";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { useForm } from "react-hook-form";
+import { format } from "date-fns";
 import { 
-  Calendar, 
   Clock, 
   Home, 
   MessageSquare, 
@@ -21,7 +29,13 @@ import {
   FilePlus,
   Phone,
   Video,
-  Download
+  Download,
+  PlusCircle,
+  CheckCircle,
+  ArrowUpDown,
+  ChevronDown,
+  Calendar as CalendarIcon,
+  X
 } from 'lucide-react';
 import ChatInterface, { Message } from '@/components/ChatInterface';
 import DoctorDirectory from '@/components/DoctorDirectory';
@@ -33,6 +47,109 @@ import { useToast } from "@/components/ui/use-toast";
 import MedicalRecordsManager from '@/components/MedicalRecordsManager';
 import Prescription from '@/components/Prescription';
 import MedicationManager from '@/components/MedicationManager';
+
+// Sample appointment data
+const appointmentsData = [
+  {
+    id: 'app_1',
+    patientName: 'Rajiv Kumar',
+    patientAvatar: null,
+    patientId: 'PAT-1001',
+    appointmentType: 'General Checkup',
+    date: new Date(Date.now() + 60 * 60 * 1000),
+    status: 'Confirmed',
+    notes: 'Follow-up on hypertension treatment'
+  },
+  {
+    id: 'app_2',
+    patientName: 'Meera Patel',
+    patientAvatar: null,
+    patientId: 'PAT-1002',
+    appointmentType: 'Consultation',
+    date: new Date(Date.now() + 3 * 60 * 60 * 1000),
+    status: 'Confirmed',
+    notes: 'New patient with joint pain'
+  },
+  {
+    id: 'app_3',
+    patientName: 'Samir Joshi',
+    patientAvatar: null,
+    patientId: 'PAT-1003',
+    appointmentType: 'Follow-up',
+    date: new Date(Date.now() + 24 * 60 * 60 * 1000),
+    status: 'Pending',
+    notes: 'Blood test results review'
+  },
+  {
+    id: 'app_4',
+    patientName: 'Priti Singh',
+    patientAvatar: null,
+    patientId: 'PAT-1004',
+    appointmentType: 'Emergency',
+    date: new Date(Date.now() + 30 * 60 * 1000),
+    status: 'Confirmed',
+    notes: 'Severe chest pain, urgent'
+  },
+  {
+    id: 'app_5',
+    patientName: 'Ankit Verma',
+    patientAvatar: null,
+    patientId: 'PAT-1005',
+    appointmentType: 'Routine Check',
+    date: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
+    status: 'Confirmed',
+    notes: 'Annual health examination'
+  }
+];
+
+// Sample patients data
+const patientsData = [
+  {
+    id: 'PAT-1001',
+    name: 'Rajiv Kumar',
+    age: 42,
+    gender: 'Male',
+    contact: '8734567890',
+    medicalHistory: 'Hypertension, Type 2 Diabetes',
+    lastVisit: '2023-05-01'
+  },
+  {
+    id: 'PAT-1002',
+    name: 'Meera Patel',
+    age: 35,
+    gender: 'Female',
+    contact: '9876543210',
+    medicalHistory: 'None',
+    lastVisit: '2023-05-10'
+  },
+  {
+    id: 'PAT-1003',
+    name: 'Samir Joshi',
+    age: 28,
+    gender: 'Male',
+    contact: '7890123456',
+    medicalHistory: 'Asthma',
+    lastVisit: '2023-04-15'
+  },
+  {
+    id: 'PAT-1004',
+    name: 'Priti Singh',
+    age: 50,
+    gender: 'Female',
+    contact: '9012345678',
+    medicalHistory: 'Heart disease, Arthritis',
+    lastVisit: '2023-05-08'
+  },
+  {
+    id: 'PAT-1005',
+    name: 'Ankit Verma',
+    age: 32,
+    gender: 'Male',
+    contact: '8901234567',
+    medicalHistory: 'None',
+    lastVisit: '2023-03-22'
+  }
+];
 
 const DoctorDashboard = () => {
   const location = useLocation();
@@ -61,7 +178,7 @@ const DoctorDashboard = () => {
                 Dashboard
               </TabsTrigger>
               <TabsTrigger value="appointments" className="data-[state=active]:bg-background">
-                <Calendar className="h-4 w-4 mr-2" />
+                <CalendarIcon className="h-4 w-4 mr-2" />
                 Appointments
               </TabsTrigger>
               <TabsTrigger value="patients" className="data-[state=active]:bg-background">
@@ -165,7 +282,7 @@ const Sidebar = ({ activeTab }: { activeTab: string }) => {
                 : 'text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors'
             }`}
           >
-            <Calendar className="h-5 w-5" />
+            <CalendarIcon className="h-5 w-5" />
             <span>Appointments</span>
           </Link>
           <Link 
@@ -344,6 +461,7 @@ const Header = () => {
 
 const Dashboard = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   
   const handleDownloadSample = () => {
     toast({
@@ -370,7 +488,14 @@ const Dashboard = () => {
           <h3 className="text-lg font-medium mb-2">Today's Appointments</h3>
           <div className="text-3xl font-bold">8</div>
           <p className="text-muted-foreground text-sm mt-2">2 more than yesterday</p>
-          <Button className="mt-4" variant="outline" size="sm">View All</Button>
+          <Button 
+            className="mt-4" 
+            variant="outline" 
+            size="sm" 
+            onClick={() => navigate('/doctor/appointments')}
+          >
+            View All
+          </Button>
         </CardContent>
       </Card>
       <Card>
@@ -378,7 +503,14 @@ const Dashboard = () => {
           <h3 className="text-lg font-medium mb-2">Patient Records</h3>
           <div className="text-3xl font-bold">248</div>
           <p className="text-muted-foreground text-sm mt-2">12 new this week</p>
-          <Button className="mt-4" variant="outline" size="sm">Manage Records</Button>
+          <Button 
+            className="mt-4" 
+            variant="outline" 
+            size="sm" 
+            onClick={() => navigate('/doctor/records')}
+          >
+            Manage Records
+          </Button>
         </CardContent>
       </Card>
       <Card>
@@ -386,7 +518,14 @@ const Dashboard = () => {
           <h3 className="text-lg font-medium mb-2">Unread Messages</h3>
           <div className="text-3xl font-bold">5</div>
           <p className="text-muted-foreground text-sm mt-2">3 urgent</p>
-          <Button className="mt-4" variant="outline" size="sm">Open Inbox</Button>
+          <Button 
+            className="mt-4" 
+            variant="outline" 
+            size="sm" 
+            onClick={() => navigate('/doctor/messages')}
+          >
+            Open Inbox
+          </Button>
         </CardContent>
       </Card>
       
@@ -394,26 +533,42 @@ const Dashboard = () => {
         <CardContent className="p-6">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-medium">Upcoming Appointments</h3>
-            <Button variant="outline" size="sm">View Calendar</Button>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => navigate('/doctor/appointments')}
+            >
+              View Calendar
+            </Button>
           </div>
           <div className="space-y-4">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="flex items-center justify-between border-b pb-4 last:border-0 last:pb-0">
+            {appointmentsData.slice(0, 3).map((appointment, i) => (
+              <div key={appointment.id} className="flex items-center justify-between border-b pb-4 last:border-0 last:pb-0">
                 <div className="flex items-center gap-3">
                   <Avatar>
-                    <AvatarFallback>P{i}</AvatarFallback>
+                    <AvatarFallback>{appointment.patientName.charAt(0)}</AvatarFallback>
                   </Avatar>
                   <div>
-                    <p className="font-medium">Patient Name {i}</p>
-                    <p className="text-sm text-muted-foreground">General Checkup</p>
+                    <p className="font-medium">{appointment.patientName}</p>
+                    <p className="text-sm text-muted-foreground">{appointment.appointmentType}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-4">
                   <div className="flex items-center gap-2 text-sm">
                     <Clock className="h-4 w-4 text-muted-foreground" />
-                    <span>10:0{i} AM</span>
+                    <span>{format(appointment.date, 'h:mm a')}</span>
                   </div>
-                  <Button size="sm">Start</Button>
+                  <Button 
+                    size="sm" 
+                    onClick={() => {
+                      toast({
+                        title: "Appointment Started",
+                        description: `Started appointment with ${appointment.patientName}`,
+                      });
+                    }}
+                  >
+                    Start
+                  </Button>
                 </div>
               </div>
             ))}
@@ -427,19 +582,47 @@ const Dashboard = () => {
         </CardHeader>
         <CardContent className="p-6 pt-0">
           <div className="space-y-2">
-            <Button className="w-full justify-start" variant="outline">
+            <Button 
+              className="w-full justify-start" 
+              variant="outline"
+              onClick={() => navigate('/doctor/prescriptions')}
+            >
               <FilePlus className="h-4 w-4 mr-2" />
               Create Prescription
             </Button>
-            <Button className="w-full justify-start" variant="outline">
+            <Button 
+              className="w-full justify-start" 
+              variant="outline"
+              onClick={() => {
+                navigate('/doctor/patients');
+                toast({
+                  title: "Add New Patient",
+                  description: "Navigate to the patients tab to add a new patient",
+                });
+              }}
+            >
               <Users className="h-4 w-4 mr-2" />
               Add New Patient
             </Button>
-            <Button className="w-full justify-start" variant="outline" onClick={handleDownloadSample}>
+            <Button 
+              className="w-full justify-start" 
+              variant="outline" 
+              onClick={handleDownloadSample}
+            >
               <Download className="h-4 w-4 mr-2" />
               Download Sample Record
             </Button>
-            <Button className="w-full justify-start" variant="outline">
+            <Button 
+              className="w-full justify-start" 
+              variant="outline"
+              onClick={() => {
+                window.open(`tel:8010599511`, '_blank');
+                toast({
+                  title: "Calling",
+                  description: "Calling 8010599511",
+                });
+              }}
+            >
               <Phone className="h-4 w-4 mr-2" />
               Call 8010599511
             </Button>
@@ -450,400 +633,210 @@ const Dashboard = () => {
   );
 };
 
+// Define the appointment form type
+type AppointmentFormValues = {
+  patientId: string;
+  appointmentType: string;
+  date: Date;
+  time: string;
+  notes: string;
+};
+
 const Appointments = () => {
+  const { toast } = useToast();
+  const [appointments, setAppointments] = useState(appointmentsData);
+  const [selectedAppointment, setSelectedAppointment] = useState<any>(null);
+  const [rescheduleOpen, setRescheduleOpen] = useState(false);
+  const [addAppointmentOpen, setAddAppointmentOpen] = useState(false);
+
+  const form = useForm<AppointmentFormValues>({
+    defaultValues: {
+      patientId: '',
+      appointmentType: 'General Checkup',
+      date: new Date(),
+      time: '10:00',
+      notes: '',
+    },
+  });
+
+  const rescheduleForm = useForm<{ date: Date; time: string; notes: string }>({
+    defaultValues: {
+      date: new Date(),
+      time: '10:00',
+      notes: '',
+    },
+  });
+
+  const handleStartAppointment = (appointment: any) => {
+    toast({
+      title: "Appointment Started",
+      description: `Started appointment with ${appointment.patientName}`,
+    });
+  };
+
+  const handleReschedule = (appointment: any) => {
+    setSelectedAppointment(appointment);
+    rescheduleForm.setValue('date', appointment.date);
+    rescheduleForm.setValue('time', format(appointment.date, 'HH:mm'));
+    rescheduleForm.setValue('notes', appointment.notes);
+    setRescheduleOpen(true);
+  };
+
+  const submitReschedule = rescheduleForm.handleSubmit((data) => {
+    if (!selectedAppointment) return;
+
+    // Create new date from form values
+    const newDate = new Date(data.date);
+    const [hours, minutes] = data.time.split(':').map(Number);
+    newDate.setHours(hours, minutes);
+
+    // Update appointment
+    const updatedAppointments = appointments.map(app => 
+      app.id === selectedAppointment.id 
+        ? { ...app, date: newDate, notes: data.notes } 
+        : app
+    );
+
+    setAppointments(updatedAppointments);
+    setRescheduleOpen(false);
+    
+    toast({
+      title: "Appointment Rescheduled",
+      description: `Appointment with ${selectedAppointment.patientName} has been rescheduled`,
+    });
+  });
+
+  const createAppointment = form.handleSubmit((data) => {
+    // Create new date from form values
+    const newDate = new Date(data.date);
+    const [hours, minutes] = data.time.split(':').map(Number);
+    newDate.setHours(hours, minutes);
+    
+    // Find patient from the ID
+    const patient = patientsData.find(p => p.id === data.patientId);
+    
+    if (!patient) {
+      toast({
+        title: "Error",
+        description: "Patient not found",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Create new appointment
+    const newAppointment = {
+      id: `app_${Date.now()}`,
+      patientName: patient.name,
+      patientAvatar: null,
+      patientId: patient.id,
+      appointmentType: data.appointmentType,
+      date: newDate,
+      status: 'Confirmed',
+      notes: data.notes
+    };
+    
+    setAppointments([...appointments, newAppointment]);
+    setAddAppointmentOpen(false);
+    form.reset();
+    
+    toast({
+      title: "Appointment Created",
+      description: `New appointment with ${patient.name} has been scheduled`,
+    });
+  });
+
   return (
     <div>
-      <h2 className="text-2xl font-bold mb-6">Appointments</h2>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold">Appointments</h2>
+        <Button onClick={() => setAddAppointmentOpen(true)}>
+          <PlusCircle className="h-4 w-4 mr-2" />
+          New Appointment
+        </Button>
+      </div>
+      
       <Card>
         <CardContent className="p-6">
           <div className="space-y-6">
-            {[1, 2, 3, 4, 5].map((i) => (
-              <div key={i} className="flex items-center justify-between border-b pb-6 last:border-0 last:pb-0">
+            {appointments.map((appointment, i) => (
+              <div key={appointment.id} className="flex items-center justify-between border-b pb-6 last:border-0 last:pb-0">
                 <div className="flex items-center gap-4">
                   <Avatar className="h-12 w-12">
-                    <AvatarFallback>P{i}</AvatarFallback>
+                    <AvatarFallback>{appointment.patientName.charAt(0)}</AvatarFallback>
                   </Avatar>
                   <div>
-                    <p className="font-medium">Patient Name {i}</p>
-                    <p className="text-sm text-muted-foreground">General Checkup</p>
+                    <p className="font-medium">{appointment.patientName}</p>
+                    <p className="text-sm text-muted-foreground">{appointment.appointmentType}</p>
+                    <p className="text-xs text-muted-foreground mt-1">{appointment.notes}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-4">
                   <div className="text-right">
-                    <p className="font-medium">Today</p>
-                    <p className="text-sm text-muted-foreground">10:0{i} AM</p>
+                    <p className="font-medium">{format(appointment.date, 'MMMM d, yyyy')}</p>
+                    <p className="text-sm text-muted-foreground">{format(appointment.date, 'h:mm a')}</p>
                   </div>
-                  <Button variant="outline" size="sm">Reschedule</Button>
-                  <Button size="sm">Start</Button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
-};
-
-const Patients = () => {
-  return (
-    <div>
-      <h2 className="text-2xl font-bold mb-6">Patients</h2>
-      <Card>
-        <CardContent className="p-6">
-          <div className="space-y-6">
-            {[1, 2, 3, 4, 5].map((i) => (
-              <div key={i} className="flex items-center justify-between border-b pb-6 last:border-0 last:pb-0">
-                <div className="flex items-center gap-4">
-                  <Avatar className="h-12 w-12">
-                    <AvatarFallback>P{i}</AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <p className="font-medium">Patient Name {i}</p>
-                    <p className="text-sm text-muted-foreground">ID: PAT-100{i}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button variant="outline" size="sm">View Records</Button>
-                  <Button size="sm">Message</Button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
-};
-
-const Messages = () => {
-  const { toast } = useToast();
-  const [activeChat, setActiveChat] = useState<string | null>('patient_123');
-  const [showDirectory, setShowDirectory] = useState(false);
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: '1',
-      content: 'Hello Dr. Chen, I have been experiencing some chest pain lately.',
-      sender: 'user',
-      timestamp: new Date(Date.now() - 3600000),
-      status: 'read'
-    },
-    {
-      id: '2',
-      content: "I'm sorry to hear that. Can you describe the pain? Is it sharp or dull? Does it radiate to other areas?",
-      sender: 'doctor',
-      timestamp: new Date(Date.now() - 3500000)
-    },
-    {
-      id: '3',
-      content: "It's a sharp pain, mostly on the left side. Sometimes it goes down my left arm.",
-      sender: 'user',
-      timestamp: new Date(Date.now() - 3400000),
-      status: 'read'
-    },
-    {
-      id: '4',
-      content: "That could be concerning. How long have you been experiencing this? And do you have any history of heart problems?",
-      sender: 'doctor',
-      timestamp: new Date(Date.now() - 3300000)
-    }
-  ]);
-  
-  const [isTyping, setIsTyping] = useState(false);
-  const [conversations, setConversations] = useState([
-    {
-      id: 'patient_123',
-      name: 'John Doe',
-      avatar: '/avatars/patient.jpg',
-      role: 'Patient',
-      lastMessage: "It's a sharp pain, mostly on the left side. Sometimes it goes down my left arm.",
-      unread: 0,
-      time: '10:45 AM',
-      type: 'patient'
-    },
-    {
-      id: 'dr_456',
-      name: 'Dr. Priya Sharma',
-      avatar: '/avatars/doctor-2.jpg',
-      role: 'Neurologist',
-      lastMessage: "I'd like your opinion on this patient's brain MRI. Do you see any abnormalities in the temporal lobe?",
-      unread: 2,
-      time: 'Yesterday',
-      type: 'doctor'
-    },
-    {
-      id: 'dr_789',
-      name: 'Dr. Anand Verma',
-      avatar: '/avatars/doctor-3.jpg',
-      role: 'Pediatrician',
-      lastMessage: "Thank you for referring that patient. I've scheduled them for a follow-up next week.",
-      unread: 0,
-      time: 'Yesterday',
-      type: 'doctor'
-    }
-  ]);
-
-  const handleSendMessage = (content: string, attachments?: File[]) => {
-    const newMessage: Message = {
-      id: Date.now().toString(),
-      content,
-      sender: 'doctor',
-      timestamp: new Date(),
-      status: 'sending'
-    };
-    
-    if (attachments && attachments.length > 0) {
-      newMessage.attachments = attachments.map(file => ({
-        type: file.type.startsWith('image/') 
-          ? 'image' 
-          : file.type.startsWith('audio/') 
-            ? 'audio' 
-            : file.type.startsWith('video/') 
-              ? 'video' 
-              : 'document',
-        url: URL.createObjectURL(file),
-        name: file.name
-      }));
-    }
-    
-    setMessages([...messages, newMessage]);
-    
-    // Update the conversation list with the new message
-    setConversations(prev => prev.map(conv => 
-      conv.id === activeChat 
-        ? {...conv, lastMessage: content, time: 'Just now'} 
-        : conv
-    ));
-    
-    // Simulate message status changes
-    setTimeout(() => {
-      setMessages(prev => prev.map(msg => 
-        msg.id === newMessage.id ? { ...msg, status: 'sent' } : msg
-      ));
-      
-      setTimeout(() => {
-        setMessages(prev => prev.map(msg => 
-          msg.id === newMessage.id ? { ...msg, status: 'delivered' } : msg
-        ));
-        
-        // Simulate typing indicator
-        setIsTyping(true);
-        
-        // Simulate a response
-        setTimeout(() => {
-          setIsTyping(false);
-          
-          const responses = [
-            "Thank you for the information, doctor. I'll follow your advice.",
-            "I appreciate your quick response. When should I come for a follow-up?",
-            "Should I take any medication for this in the meantime?",
-            "I've had similar pain before but not this intense.",
-            "Does this mean I should go to the emergency room?"
-          ];
-          
-          const response: Message = {
-            id: (Date.now() + 1).toString(),
-            content: responses[Math.floor(Math.random() * responses.length)],
-            sender: 'user',
-            timestamp: new Date(),
-            status: 'delivered'
-          };
-          
-          setMessages(prev => [...prev, response]);
-          
-          // Update conversation list
-          setConversations(prev => prev.map(conv => 
-            conv.id === activeChat 
-              ? {...conv, lastMessage: response.content, time: 'Just now'} 
-              : conv
-          ));
-          
-          // Mark doctor's message as read
-          setTimeout(() => {
-            setMessages(prev => prev.map(msg => 
-              msg.id === newMessage.id ? { ...msg, status: 'read' } : msg
-            ));
-          }, 1000);
-        }, 3000);
-      }, 1000);
-    }, 1000);
-  };
-  
-  const handleSelectConversation = (id: string) => {
-    setActiveChat(id);
-    // Clear unread count
-    setConversations(prev => prev.map(conv => 
-      conv.id === id 
-        ? {...conv, unread: 0} 
-        : conv
-    ));
-    
-    // In a real app, this would fetch messages for the selected conversation
-    // For now, we'll just keep the existing messages
-  };
-  
-  const handleSelectDoctor = (doctor: any) => {
-    // Check if we already have a conversation with this doctor
-    const existingConversation = conversations.find(conv => conv.id === doctor.id);
-    
-    if (!existingConversation) {
-      // Create a new conversation
-      const newConversation = {
-        id: doctor.id,
-        name: doctor.name,
-        avatar: doctor.avatar,
-        role: doctor.specialty,
-        lastMessage: "New conversation started",
-        unread: 0,
-        time: 'Just now',
-        type: 'doctor'
-      };
-      
-      setConversations([newConversation, ...conversations]);
-    }
-    
-    // Select the conversation
-    setActiveChat(doctor.id);
-    setShowDirectory(false);
-    
-    toast({
-      title: "Chat started",
-      description: `You can now chat with ${doctor.name}`,
-    });
-  };
-  
-  const getActiveConversation = () => {
-    return conversations.find(conv => conv.id === activeChat) || null;
-  };
-  
-  return (
-    <div className="h-full flex flex-col">
-      <div className="flex-1 overflow-hidden">
-        <div className="h-full grid grid-cols-12 gap-0">
-          {/* Sidebar with conversations list */}
-          <div className="col-span-3 border-r h-full overflow-y-auto">
-            <div className="p-4 border-b">
-              <div className="flex justify-between items-center">
-                <h3 className="font-medium">Messages</h3>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="h-8 w-8 p-0 rounded-full"
-                  onClick={() => setShowDirectory(!showDirectory)}
-                >
-                  <MessageSquare className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-            {!showDirectory ? (
-              <div className="divide-y">
-                {conversations.map(conversation => (
-                  <div 
-                    key={conversation.id}
-                    className={`p-3 cursor-pointer hover:bg-muted/50 ${activeChat === conversation.id ? 'bg-muted' : ''}`}
-                    onClick={() => handleSelectConversation(conversation.id)}
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => handleReschedule(appointment)}
                   >
-                    <div className="flex gap-3">
-                      <Avatar className="h-12 w-12 relative">
-                        <AvatarImage src={conversation.avatar} alt={conversation.name} />
-                        <AvatarFallback>{conversation.name.substring(0, 2).toUpperCase()}</AvatarFallback>
-                        {conversation.type === 'doctor' && (
-                          <div className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-blue-500 border-2 border-white"></div>
-                        )}
-                      </Avatar>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex justify-between items-start">
-                          <h4 className="font-medium text-sm truncate">{conversation.name}</h4>
-                          <span className="text-xs text-muted-foreground">{conversation.time}</span>
-                        </div>
-                        <p className="text-xs text-muted-foreground">{conversation.role}</p>
-                        <p className="text-xs truncate">{conversation.lastMessage}</p>
-                      </div>
-                      {conversation.unread > 0 && (
-                        <div className="flex-shrink-0 flex items-start">
-                          <span className="bg-primary text-primary-foreground text-xs rounded-full h-5 min-w-5 flex items-center justify-center px-1">
-                            {conversation.unread}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <DoctorDirectory onSelectDoctor={handleSelectDoctor} />
-            )}
-          </div>
-          
-          {/* Chat area */}
-          <div className="col-span-9 h-full flex flex-col">
-            <Card className="h-full flex flex-col rounded-none border-0">
-              <CardContent className="p-0 flex-1">
-                {activeChat ? (
-                  <ChatInterface 
-                    messages={messages} 
-                    onSendMessage={handleSendMessage}
-                    placeholder="Type your message..."
-                    buttonText="Send"
-                    recipientId={activeChat}
-                    recipientName={getActiveConversation()?.name || ''}
-                    recipientAvatar={getActiveConversation()?.avatar || ''}
-                    recipientRole={getActiveConversation()?.role || ''}
-                    isTyping={isTyping}
-                  />
-                ) : (
-                  <div className="h-full flex items-center justify-center">
-                    <div className="text-center p-6">
-                      <MessageSquare className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                      <h3 className="font-medium text-lg">No conversation selected</h3>
-                      <p className="text-muted-foreground mt-1">Select a conversation from the sidebar or start a new one</p>
-                      <Button
-                        className="mt-4"
-                        onClick={() => setShowDirectory(true)}
-                      >
-                        Find Doctors
-                      </Button>
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const Records = () => {
-  return (
-    <div>
-      <h2 className="text-2xl font-bold mb-6">Patient Records</h2>
-      <Card>
-        <CardContent className="p-6">
-          <div className="space-y-6">
-            {[1, 2, 3, 4, 5].map((i) => (
-              <div key={i} className="flex items-center justify-between border-b pb-6 last:border-0 last:pb-0">
-                <div className="flex items-center gap-4">
-                  <Avatar className="h-12 w-12">
-                    <AvatarFallback>P{i}</AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <p className="font-medium">Patient Name {i}</p>
-                    <p className="text-sm text-muted-foreground">Last updated: {i} day{i !== 1 ? 's' : ''} ago</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button variant="outline" size="sm">View</Button>
-                  <Button size="sm">Update</Button>
+                    Reschedule
+                  </Button>
+                  <Button 
+                    size="sm"
+                    onClick={() => handleStartAppointment(appointment)}
+                  >
+                    Start
+                  </Button>
                 </div>
               </div>
             ))}
           </div>
         </CardContent>
       </Card>
-    </div>
-  );
-};
 
-export default DoctorDashboard;
+      {/* Add Appointment Dialog */}
+      <Dialog open={addAppointmentOpen} onOpenChange={setAddAppointmentOpen}>
+        <DialogContent className="sm:max-w-[550px]">
+          <DialogHeader>
+            <DialogTitle>Schedule New Appointment</DialogTitle>
+            <DialogDescription>
+              Create a new appointment for a patient.
+            </DialogDescription>
+          </DialogHeader>
+          <Form {...form}>
+            <form onSubmit={createAppointment} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="patientId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Patient</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a patient" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {patientsData.map(patient => (
+                          <SelectItem key={patient.id} value={patient.id}>
+                            {patient.name} ({patient.id})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="appointmentType"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Appointment Type</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>

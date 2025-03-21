@@ -9,7 +9,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Bed, Clock, Stethoscope, Calendar, Pill, Truck, Clipboard, Hospital, User, Search } from "lucide-react";
+import { Bed, Clock, Stethoscope, Calendar, Pill, Truck, Hospital, User, Search, AlertCircle } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 
 interface Doctor {
   id: string;
@@ -84,6 +85,7 @@ const hospitalData: HospitalData = {
 };
 
 const HospitalTracking: React.FC = () => {
+  const { toast } = useToast();
   const [selectedHospital, setSelectedHospital] = useState<string>(hospitalData.id);
   const [activeTab, setActiveTab] = useState('beds');
   const [departmentFilter, setDepartmentFilter] = useState<string>('all');
@@ -127,6 +129,23 @@ const HospitalTracking: React.FC = () => {
     if (utilizationRate < 70) return 'bg-green-500';
     if (utilizationRate < 90) return 'bg-yellow-500';
     return 'bg-red-500';
+  };
+
+  const handleScheduleDoctor = (doctorId: string) => {
+    const doctor = hospitalData.doctors.find(d => d.id === doctorId);
+    if (doctor) {
+      toast({
+        title: "Doctor Scheduled",
+        description: `You've scheduled an appointment with ${doctor.name}`,
+      });
+    }
+  };
+
+  const handleRequestSupplies = () => {
+    toast({
+      title: "Supplies Requested",
+      description: "Your supply request has been submitted successfully",
+    });
   };
   
   return (
@@ -250,6 +269,21 @@ const HospitalTracking: React.FC = () => {
                           <span>Estimated admission time for new patients: {dept.averageWaitTime}</span>
                         </div>
                       )}
+
+                      <div className="mt-4 flex justify-end">
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          onClick={() => {
+                            toast({
+                              title: "Bed Request Sent",
+                              description: `Requested a bed in ${dept.name}`,
+                            });
+                          }}
+                        >
+                          Request Bed
+                        </Button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -312,6 +346,7 @@ const HospitalTracking: React.FC = () => {
                             variant="outline" 
                             size="sm"
                             disabled={doctor.status !== 'available'}
+                            onClick={() => handleScheduleDoctor(doctor.id)}
                           >
                             Schedule
                           </Button>
@@ -360,6 +395,7 @@ const HospitalTracking: React.FC = () => {
                       <TableHead>Available</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Next Delivery</TableHead>
+                      <TableHead>Action</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -386,6 +422,20 @@ const HospitalTracking: React.FC = () => {
                         <TableCell>
                           {item.nextDelivery || 'Not scheduled'}
                         </TableCell>
+                        <TableCell>
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => {
+                              toast({
+                                title: "Order Placed",
+                                description: `Ordered more ${item.name}`,
+                              });
+                            }}
+                          >
+                            Order
+                          </Button>
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -396,7 +446,7 @@ const HospitalTracking: React.FC = () => {
               <span className="text-muted-foreground">
                 Last updated: Today, 13:45 (auto-refreshes every 30 minutes)
               </span>
-              <Button size="sm" className="gap-2">
+              <Button size="sm" className="gap-2" onClick={handleRequestSupplies}>
                 <Truck className="h-4 w-4" />
                 Request Supplies
               </Button>
