@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,7 +8,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Calendar, CalendarIcon } from "@/components/ui/calendar";
+import { Calendar } from "@/components/ui/calendar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useForm } from "react-hook-form";
@@ -49,7 +48,6 @@ import MedicalRecordsManager from '@/components/MedicalRecordsManager';
 import Prescription from '@/components/Prescription';
 import MedicationManager from '@/components/MedicationManager';
 
-// Sample appointment data
 const appointmentsData = [
   {
     id: 'app_1',
@@ -103,7 +101,6 @@ const appointmentsData = [
   }
 ];
 
-// Sample patients data
 const patientsData = [
   {
     id: 'PAT-1001',
@@ -470,10 +467,8 @@ const Dashboard = () => {
       description: "Sample medical record document has been downloaded",
     });
     
-    // Create a sample PDF with demo data
-    const samplePDF = "data:application/pdf;base64,JVBERi0xLjcKJeLjz9MKNSAwIG9iago8PAovRmlsdGVyIC9GbGF0ZURlY29kZQovTGVuZ3RoIDM4Cj4+CnN0cmVhbQp4nCvkMlAwUDC1NNUzMVGwMDHUszRSKOQCABxHBD8KZW5kc3RyZWFtCmVuZG9iago0IDAgb2JqCjw8Ci9UeXBlIC9QYWdlCi9NZWRpYUJveCBbMCAwIDU5NS4yNzYgODQxLjg5XQovUmVzb3VyY2VzIDw8Pj4KL0NvbnRlbnRzIDUgMCBSCi9QYXJlbnQgMiAwIFIKPj4KZW5kb2JqCjIgMCBvYmoKPDwKL1R5cGUgL1BhZ2VzCi9LaWRzIFs0IDAgUl0KL0NvdW50IDEKPj4KZW5kb2JqCjEgMCBvYmoKPDwKL1R5cGUgL0NhdGFsb2cKL1BhZ2VzIDIgMCBSCj4+CmVuZG9iagp4cmVmCjAgNwowMDAwMDAwMDAwIDY1NTM1IGYgCjAwMDAwMDAyMjEgMDAwMDAgbiAKMDAwMDAwMDE3MiAwMDAwMCBuIAowMDAwMDAwMDAwIDAwMDAwIGYgCjAwMDAwMDAwNzMgMDAwMDAgbiAKMDAwMDAwMDAwMCAwMDAwMCBuIAowMDAwMDAwMjcwIDAwMDAwIG4gCnRyYWlsZXIKPDwKL1NpemUgNwovUm9vdCAxIDAgUgovSW5mbyA2IDAgUgo+PgpzdGFydHhyZWYKMzgxCiUlRU9GCg==";
+    const samplePDF = "data:application/pdf;base64,JVBERi0xLjcKJeLjz9MKNSAwIG9iago8PAovRmlsdGVyIC9GbGF0ZURlY29kZQovTGVuZ3RoIDM4Cj4+CnN0cmVhbQp4nCvkMlAwUDC1NNUzMVGwMDHUszRSKOQCABxHBD8KZW5kc3RyZWFtCmVuZG9iago0IDAgb2JqCjw8Ci9UeXBlIC9QYWdlCi9NZWRpYUJveCBbMCAwIDU5NTM1IGYgCjAwMDAwMDAyMjEgMDAwMDAgbiAKMDAwMDAwMDE3MiAwMDAwMCBuIAowMDAwMDAwMDAwIDAwMDAwIGYgCjAwMDAwMDAwNzMgMDAwMDAgbiAKMDAwMDAwMDAwMCAwMDAwMCBuIAowMDAwMDAwMjcwIDAwMDAwIG4gCnRyYWlsZXIKPDwKL1NpemUgNwovUm9vdCAxIDAgUgovSW5mbyA2IDAgUgo+PgpzdGFydHhyZWYKMzgxCiUlRU9GCg==";
     
-    // Create download link
     const downloadLink = document.createElement("a");
     downloadLink.href = samplePDF;
     downloadLink.download = "sample-medical-record.pdf";
@@ -634,7 +629,6 @@ const Dashboard = () => {
   );
 };
 
-// Define the appointment form type
 type AppointmentFormValues = {
   patientId: string;
   appointmentType: string;
@@ -686,12 +680,10 @@ const Appointments = () => {
   const submitReschedule = rescheduleForm.handleSubmit((data) => {
     if (!selectedAppointment) return;
 
-    // Create new date from form values
     const newDate = new Date(data.date);
     const [hours, minutes] = data.time.split(':').map(Number);
     newDate.setHours(hours, minutes);
 
-    // Update appointment
     const updatedAppointments = appointments.map(app => 
       app.id === selectedAppointment.id 
         ? { ...app, date: newDate, notes: data.notes } 
@@ -708,12 +700,10 @@ const Appointments = () => {
   });
 
   const createAppointment = form.handleSubmit((data) => {
-    // Create new date from form values
     const newDate = new Date(data.date);
     const [hours, minutes] = data.time.split(':').map(Number);
     newDate.setHours(hours, minutes);
     
-    // Find patient from the ID
     const patient = patientsData.find(p => p.id === data.patientId);
     
     if (!patient) {
@@ -725,7 +715,6 @@ const Appointments = () => {
       return;
     }
     
-    // Create new appointment
     const newAppointment = {
       id: `app_${Date.now()}`,
       patientName: patient.name,
@@ -797,7 +786,6 @@ const Appointments = () => {
         </CardContent>
       </Card>
 
-      {/* Add Appointment Dialog */}
       <Dialog open={addAppointmentOpen} onOpenChange={setAddAppointmentOpen}>
         <DialogContent className="sm:max-w-[550px]">
           <DialogHeader>
@@ -930,7 +918,6 @@ const Appointments = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Reschedule Dialog */}
       <Dialog open={rescheduleOpen} onOpenChange={setRescheduleOpen}>
         <DialogContent className="sm:max-w-[550px]">
           <DialogHeader>
@@ -1018,7 +1005,6 @@ const Appointments = () => {
   );
 };
 
-// Stub for Patients component
 const Patients = () => {
   return (
     <div>
@@ -1052,13 +1038,12 @@ const Patients = () => {
   );
 };
 
-// Stub for Messages component
 const Messages = () => {
   const [messages, setMessages] = useState<Message[]>([
-    {id: 'msg1', sender: 'Dr. Sarah Chen', text: 'Hello, how are you feeling today?', timestamp: new Date(Date.now() - 3600000)},
-    {id: 'msg2', sender: 'Rajiv Kumar', text: 'Much better, doctor. The medication is helping.', timestamp: new Date(Date.now() - 3500000)},
-    {id: 'msg3', sender: 'Dr. Sarah Chen', text: 'Great! Any side effects?', timestamp: new Date(Date.now() - 3400000)},
-    {id: 'msg4', sender: 'Rajiv Kumar', text: 'Just a bit drowsy in the morning, but it's manageable.', timestamp: new Date(Date.now() - 3300000)},
+    {id: 'msg1', sender: 'doctor', content: 'Hello, how are you feeling today?', timestamp: new Date(Date.now() - 3600000)},
+    {id: 'msg2', sender: 'user', content: 'Much better, doctor. The medication is helping.', timestamp: new Date(Date.now() - 3500000)},
+    {id: 'msg3', sender: 'doctor', content: 'Great! Any side effects?', timestamp: new Date(Date.now() - 3400000)},
+    {id: 'msg4', sender: 'user', content: "Just a bit drowsy in the morning, but it's manageable.", timestamp: new Date(Date.now() - 3300000)},
   ]);
 
   return (
@@ -1067,22 +1052,14 @@ const Messages = () => {
       onSendMessage={(text) => {
         const newMessage = {
           id: `msg${Date.now()}`,
-          sender: 'Dr. Sarah Chen',
-          text,
+          sender: 'doctor',
+          content: text,
           timestamp: new Date()
         };
         setMessages([...messages, newMessage]);
       }}
-      currentUser={{
-        id: 'doctor_1',
-        name: 'Dr. Sarah Chen',
-        avatar: '/avatars/doctor.jpg'
-      }}
-      contact={{
-        id: 'patient_1',
-        name: 'Rajiv Kumar',
-        avatar: null
-      }}
+      recipientName="Rajiv Kumar"
+      recipientRole="Patient"
     />
   );
 };
