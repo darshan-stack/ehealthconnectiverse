@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/components/ui/use-toast";
-import { Heart, Music, Play, Pause, SkipForward, SkipBack, Volume2, Volume1, VolumeX, Bookmark, ThumbsUp, MessageSquare, Calendar, Clock, Info, PlayCircle, Star, PlusCircle, Smile, Frown, Meh } from 'lucide-react';
+import { Heart, Music, Play, Pause, SkipForward, SkipBack, Volume2, Volume1, VolumeX, Bookmark, ThumbsUp, MessageSquare, Calendar, Clock, Info, PlayCircle, Star, PlusCircle, Smile, Frown, Meh, Phone, PhoneCall } from 'lucide-react';
 
 // Music data
 const musicData = [
