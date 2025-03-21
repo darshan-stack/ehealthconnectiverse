@@ -1050,7 +1050,7 @@ const Messages = () => {
     <ChatInterface 
       messages={messages}
       onSendMessage={(text) => {
-        const newMessage = {
+        const newMessage: Message = {
           id: `msg${Date.now()}`,
           sender: 'doctor',
           content: text,
