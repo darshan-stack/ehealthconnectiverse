@@ -13,6 +13,34 @@ import { Separator } from "@/components/ui/separator";
 import { MessageSquare, Heart, Share2, Send, PlusCircle, ThumbsUp, Clock, AlertCircle, BookmarkPlus, MoreHorizontal, Image as ImageIcon, Paperclip, Smile } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
+interface Author {
+  id: string;
+  name: string;
+  avatar: string;
+  role: string;
+  specialty?: string;
+}
+
+interface Comment {
+  id: string;
+  author: Author;
+  content: string;
+  timestamp: Date;
+  likes: number;
+}
+
+interface Post {
+  id: string;
+  author: Author;
+  content: string;
+  timestamp: Date;
+  likes: number;
+  comments: Comment[];
+  shares: number;
+  hasImage: boolean;
+  image?: string;
+}
+
 // Demo user data
 const currentUser = {
   id: "user1",
@@ -22,7 +50,7 @@ const currentUser = {
 };
 
 // Demo posts data
-const initialPosts = [
+const initialPosts: Post[] = [
   {
     id: "post1",
     author: {
@@ -141,7 +169,7 @@ const initialPosts = [
 
 const SocialFeed: React.FC = () => {
   const { toast } = useToast();
-  const [posts, setPosts] = useState(initialPosts);
+  const [posts, setPosts] = useState<Post[]>(initialPosts);
   const [newPostContent, setNewPostContent] = useState("");
   const [newCommentContent, setNewCommentContent] = useState("");
   const [activeCommentPostId, setActiveCommentPostId] = useState<string | null>(null);
@@ -177,7 +205,7 @@ const SocialFeed: React.FC = () => {
       return;
     }
     
-    const newPost = {
+    const newPost: Post = {
       id: `post${Date.now()}`,
       author: currentUser,
       content: newPostContent,
@@ -195,7 +223,7 @@ const SocialFeed: React.FC = () => {
     toast({
       title: "Post created",
       description: "Your post has been published successfully.",
-      variant: "success",
+      variant: "default",
     });
   };
   
@@ -209,7 +237,7 @@ const SocialFeed: React.FC = () => {
       return;
     }
     
-    const newComment = {
+    const newComment: Comment = {
       id: `comment${Date.now()}`,
       author: currentUser,
       content: newCommentContent,
@@ -375,7 +403,7 @@ const SocialFeed: React.FC = () => {
                       <div>
                         <div className="flex items-center gap-2">
                           <CardTitle className="text-base">{post.author.name}</CardTitle>
-                          {post.author.role === "doctor" && (
+                          {post.author.role === "doctor" && post.author.specialty && (
                             <Badge variant="outline" className="text-blue-600 border-blue-300 bg-blue-50">
                               {post.author.specialty}
                             </Badge>

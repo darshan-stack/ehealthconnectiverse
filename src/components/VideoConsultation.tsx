@@ -114,7 +114,7 @@ const VideoConsultation: React.FC = () => {
     toast({
       title: "Appointment booked",
       description: `Your appointment with ${doctor.name} has been scheduled.`,
-      variant: "success",
+      variant: "default",
     });
   };
 
@@ -171,7 +171,7 @@ const VideoConsultation: React.FC = () => {
                         Chat
                       </Button>
                       <Button 
-                        variant="success" 
+                        variant="default" 
                         size="sm"
                         onClick={() => handleStartVideoCall(doctor)}
                       >
