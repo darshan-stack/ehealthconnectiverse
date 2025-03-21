@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -153,6 +153,12 @@ const DoctorDashboard = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("dashboard");
+  const [emergencyNotifications, setEmergencyNotifications] = useState<number>(0);
+
+  React.useEffect(() => {
+    const path = location.pathname.split('/').filter(Boolean)[1] || 'dashboard';
+    setActiveTab(path);
+  }, [location]);
 
   const handleTabChange = (value: string) => {
     setActiveTab(value);
@@ -161,9 +167,9 @@ const DoctorDashboard = () => {
 
   return (
     <div className="flex h-screen bg-background">
-      <Sidebar activeTab={activeTab} />
+      <Sidebar activeTab={activeTab} emergencyCount={emergencyNotifications} />
       <div className="flex-1 flex flex-col overflow-hidden">
-        <Header />
+        <Header emergencyCount={emergencyNotifications} />
         <Tabs 
           value={activeTab} 
           onValueChange={handleTabChange}
@@ -199,6 +205,22 @@ const DoctorDashboard = () => {
                 <Pill className="h-4 w-4 mr-2" />
                 Medications
               </TabsTrigger>
+              <TabsTrigger value="emergency" className="data-[state=active]:bg-background">
+                <Ambulance className="h-4 w-4 mr-2" />
+                Emergency
+              </TabsTrigger>
+              <TabsTrigger value="research" className="data-[state=active]:bg-background">
+                <BookOpen className="h-4 w-4 mr-2" />
+                Research
+              </TabsTrigger>
+              <TabsTrigger value="schemes" className="data-[state=active]:bg-background">
+                <FileText className="h-4 w-4 mr-2" />
+                Gov Schemes
+              </TabsTrigger>
+              <TabsTrigger value="hospital" className="data-[state=active]:bg-background">
+                <Hospital className="h-4 w-4 mr-2" />
+                Hospital Status
+              </TabsTrigger>
             </TabsList>
           </div>
           <div className="flex-1 overflow-auto p-4">
@@ -224,7 +246,7 @@ const DoctorDashboard = () => {
               <MedicationManager />
             </TabsContent>
             <TabsContent value="emergency" className="h-full mt-0">
-              <EmergencyServices />
+              <EmergencyServices onNewEmergency={(count) => setEmergencyNotifications(count)} />
             </TabsContent>
             <TabsContent value="research" className="h-full mt-0">
               <ResearchPaperSharing 
@@ -249,7 +271,7 @@ const DoctorDashboard = () => {
   );
 };
 
-const Sidebar = ({ activeTab }: { activeTab: string }) => {
+const Sidebar = ({ activeTab, emergencyCount = 0 }: { activeTab: string, emergencyCount?: number }) => {
   return (
     <div className="w-64 border-r bg-sidebar p-4 flex flex-col">
       <div className="flex items-center gap-2 mb-8">
@@ -346,7 +368,14 @@ const Sidebar = ({ activeTab }: { activeTab: string }) => {
                 : 'text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors'
             }`}
           >
-            <Ambulance className="h-5 w-5" />
+            <div className="relative">
+              <Ambulance className="h-5 w-5" />
+              {emergencyCount > 0 && (
+                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] text-white">
+                  {emergencyCount}
+                </span>
+              )}
+            </div>
             <span>Emergency</span>
           </Link>
           <Link 
@@ -412,8 +441,9 @@ const Sidebar = ({ activeTab }: { activeTab: string }) => {
   );
 };
 
-const Header = () => {
+const Header = ({ emergencyCount = 0 }: { emergencyCount?: number }) => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   
   const handleVideoCall = () => {
     window.open(`tel:8010599511`, '_blank');
@@ -445,8 +475,18 @@ const Header = () => {
           <MessageSquare className="h-4 w-4 mr-2" />
           WhatsApp
         </Button>
-        <Button variant="outline" size="icon" className="rounded-full">
+        <Button 
+          variant="outline" 
+          size="icon" 
+          className="rounded-full relative"
+          onClick={() => navigate('/doctor/emergency')}
+        >
           <Bell className="h-4 w-4" />
+          {emergencyCount > 0 && (
+            <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] text-white">
+              {emergencyCount}
+            </span>
+          )}
         </Button>
         <Avatar>
           <AvatarImage src="/avatars/doctor.jpg" />
