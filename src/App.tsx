@@ -13,6 +13,7 @@ import DoctorDashboard from "./pages/DoctorDashboard";
 import Chat from "./pages/Chat";
 import Records from "./pages/Records";
 import NotFound from "./pages/NotFound";
+import EmergencyDashboardPage from "./pages/EmergencyDashboardPage";
 
 const queryClient = new QueryClient();
 
@@ -31,6 +32,7 @@ const App = () => (
             <Route path="/doctor/*" element={<DoctorDashboard />} />
             <Route path="/chat/:id" element={<Chat />} />
             <Route path="/records" element={<Records />} />
+            <Route path="/emergency" element={<EmergencyDashboardPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
