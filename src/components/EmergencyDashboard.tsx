@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -48,27 +47,19 @@ const EmergencyDashboard: React.FC<EmergencyDashboardProps> = ({
   const [accessedPatients, setAccessedPatients] = useState<any[]>([]);
   const [showAccessDialog, setShowAccessDialog] = useState(false);
   
-  // Fetch emergency requests and accessed patients on load
   useEffect(() => {
-    // In a real app, we would fetch this data from the backend
     const fetchEmergencyData = async () => {
       try {
-        // Simulate fetching pending requests
         const pendingRequests = await EmergencyAccessService.getPendingEmergencyRequests(providerId);
-        
-        // Add to our existing mock data
         setEmergencyRequests(prev => [
           ...prev.filter(req => req.status !== 'pending'),
           ...pendingRequests
         ]);
         
-        // Simulate fetching access activity
         const accessActivity = await EmergencyAccessService.getEmergencyAccessActivity(providerId);
-        
-        // Convert to accessed patients format
         const patients = accessActivity.map(activity => ({
           patientId: activity.patientId,
-          patientName: `Patient ${activity.patientId.slice(-3)}`, // In a real app, we'd get the actual name
+          patientName: `Patient ${activity.patientId.slice(-3)}`,
           accessGranted: activity.accessTime,
           expiryTime: activity.expiryTime
         }));
@@ -84,14 +75,12 @@ const EmergencyDashboard: React.FC<EmergencyDashboardProps> = ({
   
   const handleEmergencyResponse = async (requestId: string, action: 'accept' | 'reject') => {
     try {
-      // Update request in backend
       await EmergencyAccessService.respondToEmergencyRequest(
         requestId,
         providerId,
         action
       );
       
-      // Update local state
       setEmergencyRequests(prev => 
         prev.map(req => 
           req.id === requestId 
@@ -129,7 +118,6 @@ const EmergencyDashboard: React.FC<EmergencyDashboardProps> = ({
   };
   
   const handleNewEmergencyAccess = (patientId: string, records: any[]) => {
-    // Add to accessed patients
     const patientName = records[0]?.patientName || "Unknown Patient";
     
     setAccessedPatients(prev => [...prev, {
@@ -351,7 +339,6 @@ const EmergencyDashboard: React.FC<EmergencyDashboardProps> = ({
         </Card>
       </div>
       
-      {/* Emergency Access Dialog */}
       <Dialog open={showAccessDialog} onOpenChange={setShowAccessDialog}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
