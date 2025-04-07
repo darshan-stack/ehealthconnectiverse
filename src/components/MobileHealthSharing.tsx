@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -14,6 +13,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { useDeviceSharing } from "@/hooks/use-device-sharing";
 import { EmergencyAccessService } from "@/utils/emergencyAccessService";
+import BluetoothTokenSharing from "@/components/BluetoothTokenSharing";
 import { Bluetooth, Nfc, Shield, Clock, AlertTriangle, Copy, CheckCircle, X, Smartphone, Search, MapPin, QrCode, PhoneCall, BadgeAlert } from 'lucide-react';
 
 interface MobileHealthSharingProps {
@@ -238,50 +238,58 @@ const MobileHealthSharing: React.FC<MobileHealthSharingProps> = ({ patientId, pa
       </CardHeader>
       <CardContent>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid grid-cols-3 mb-4">
+          <TabsList className="grid grid-cols-4 mb-4">
+            <TabsTrigger value="token" disabled={!isBluetoothAvailable}>
+              <Badge className="h-4 w-4 mr-2" />
+              Token
+            </TabsTrigger>
             <TabsTrigger value="nfc" disabled={!isNfcAvailable}>
-              <Nfc className="mr-2 h-4 w-4" />
+              <Nfc className="h-4 w-4 mr-2" />
               NFC
             </TabsTrigger>
             <TabsTrigger value="bluetooth" disabled={!isBluetoothAvailable}>
-              <Bluetooth className="mr-2 h-4 w-4" />
+              <Bluetooth className="h-4 w-4 mr-2" />
               Bluetooth
             </TabsTrigger>
             <TabsTrigger value="emergency">
-              <AlertTriangle className="mr-2 h-4 w-4" />
+              <AlertTriangle className="h-4 w-4 mr-2" />
               Emergency
             </TabsTrigger>
           </TabsList>
           
-          <div className="mb-4">
-            <div className="flex items-center justify-between mb-2">
-              <Label htmlFor="temporary-access">Temporary Access</Label>
-              <Switch 
-                id="temporary-access" 
-                checked={isTemporaryAccess}
-                onCheckedChange={setIsTemporaryAccess}
-              />
-            </div>
-            
-            {isTemporaryAccess && (
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <Label htmlFor="access-duration">Access Duration</Label>
-                  <span className="text-sm text-muted-foreground">{accessDuration} hours</span>
-                </div>
-                <Slider
-                  id="access-duration"
-                  min={1}
-                  max={24}
-                  step={1}
-                  value={[accessDuration]}
-                  onValueChange={(values) => setAccessDuration(values[0])}
-                />
-              </div>
-            )}
-          </div>
+          <TabsContent value="token" className="space-y-4">
+            <BluetoothTokenSharing patientId={patientId} patientName={patientName} />
+          </TabsContent>
           
           <TabsContent value="nfc" className="space-y-4">
+            <div className="mb-4">
+              <div className="flex items-center justify-between mb-2">
+                <Label htmlFor="temporary-access">Temporary Access</Label>
+                <Switch 
+                  id="temporary-access" 
+                  checked={isTemporaryAccess}
+                  onCheckedChange={setIsTemporaryAccess}
+                />
+              </div>
+              
+              {isTemporaryAccess && (
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <Label htmlFor="access-duration">Access Duration</Label>
+                    <span className="text-sm text-muted-foreground">{accessDuration} hours</span>
+                  </div>
+                  <Slider
+                    id="access-duration"
+                    min={1}
+                    max={24}
+                    step={1}
+                    value={[accessDuration]}
+                    onValueChange={(values) => setAccessDuration(values[0])}
+                  />
+                </div>
+              )}
+            </div>
+            
             <div className="bg-muted/50 rounded-lg p-4 text-center">
               <Nfc className="h-16 w-16 mx-auto mb-2 text-primary" />
               <h3 className="font-medium">NFC Sharing</h3>
@@ -299,6 +307,34 @@ const MobileHealthSharing: React.FC<MobileHealthSharingProps> = ({ patientId, pa
           </TabsContent>
           
           <TabsContent value="bluetooth" className="space-y-4">
+            <div className="mb-4">
+              <div className="flex items-center justify-between mb-2">
+                <Label htmlFor="temporary-access-bt">Temporary Access</Label>
+                <Switch 
+                  id="temporary-access-bt" 
+                  checked={isTemporaryAccess}
+                  onCheckedChange={setIsTemporaryAccess}
+                />
+              </div>
+              
+              {isTemporaryAccess && (
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <Label htmlFor="access-duration-bt">Access Duration</Label>
+                    <span className="text-sm text-muted-foreground">{accessDuration} hours</span>
+                  </div>
+                  <Slider
+                    id="access-duration-bt"
+                    min={1}
+                    max={24}
+                    step={1}
+                    value={[accessDuration]}
+                    onValueChange={(values) => setAccessDuration(values[0])}
+                  />
+                </div>
+              )}
+            </div>
+            
             <div className="bg-muted/50 rounded-lg p-4 text-center">
               <Bluetooth className="h-16 w-16 mx-auto mb-2 text-primary" />
               <h3 className="font-medium">Bluetooth Sharing</h3>

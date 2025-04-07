@@ -4,8 +4,10 @@ import { Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import EmergencyDashboard from "@/components/EmergencyDashboard";
 import EmergencyAlert from "@/components/EmergencyAlert";
+import QrCodeScanner from "@/components/QrCodeScanner";
+import MedicalDocumentValidator from "@/components/MedicalDocumentValidator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BadgeAlert, ChevronLeft } from 'lucide-react';
+import { BadgeAlert, ChevronLeft, QrCode, FileText, Scan } from 'lucide-react';
 
 const EmergencyDashboardPage = () => {
   // Mock provider data
@@ -41,6 +43,14 @@ const EmergencyDashboardPage = () => {
                 <BadgeAlert className="h-4 w-4 mr-1 text-destructive" />
                 Emergency Access
               </TabsTrigger>
+              <TabsTrigger value="qrscanner" className="flex items-center">
+                <QrCode className="h-4 w-4 mr-1" />
+                QR Scanner
+              </TabsTrigger>
+              <TabsTrigger value="documents" className="flex items-center">
+                <FileText className="h-4 w-4 mr-1" />
+                Documents
+              </TabsTrigger>
             </TabsList>
           </div>
           
@@ -50,6 +60,14 @@ const EmergencyDashboardPage = () => {
           
           <TabsContent value="emergency" className="mt-0">
             <EmergencyAlert providerId={providerId} providerName={providerName} />
+          </TabsContent>
+          
+          <TabsContent value="qrscanner" className="mt-0">
+            <QrCodeScanner providerId={providerId} providerName={providerName} />
+          </TabsContent>
+          
+          <TabsContent value="documents" className="mt-0">
+            <MedicalDocumentValidator patientId="shared_patient" doctorId={providerId} />
           </TabsContent>
         </Tabs>
       </div>
