@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -10,10 +10,11 @@ import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { useDeviceSharing } from "@/hooks/use-device-sharing";
 import { EmergencyAccessService } from "@/utils/emergencyAccessService";
-import { Bluetooth, Nfc, Shield, Clock, AlertTriangle, Copy, CheckCircle, X } from 'lucide-react';
+import { Bluetooth, Nfc, Shield, Clock, AlertTriangle, Copy, CheckCircle, X, Smartphone, Search } from 'lucide-react';
 
 interface MobileHealthSharingProps {
   patientId: string;
@@ -22,13 +23,16 @@ interface MobileHealthSharingProps {
 
 const MobileHealthSharing: React.FC<MobileHealthSharingProps> = ({ patientId, patientName }) => {
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState("nfc");
+  const [activeTab, setActiveTab] = useState("bluetooth");
   const [accessDuration, setAccessDuration] = useState(4); // hours
   const [isTemporaryAccess, setIsTemporaryAccess] = useState(true);
   const [pinDisplay, setPinDisplay] = useState<string | null>(null);
   const [showPinDialog, setShowPinDialog] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [activePins, setActivePins] = useState<any[]>([]);
+  const [availableDevices, setAvailableDevices] = useState<{id: string, name: string}[]>([]);
+  const [selectedDevice, setSelectedDevice] = useState<string | null>(null);
+  const [isScanning, setIsScanning] = useState(false);
   
   const { 
     isNfcAvailable, 
@@ -36,22 +40,66 @@ const MobileHealthSharing: React.FC<MobileHealthSharingProps> = ({ patientId, pa
     isSharing,
     shareViaNfc,
     shareViaBluetooth,
-    generateEmergencyPin
+    generateEmergencyPin,
+    scanForBluetoothDevices
   } = useDeviceSharing({
     onShareSuccess: (method) => {
       console.log(`Successfully shared via ${method}`);
+      toast({
+        title: "Sharing Successful",
+        description: `Health records shared via ${method} successfully`,
+      });
     },
     onShareError: (error, method) => {
       console.error(`Error sharing via ${method}:`, error);
+      toast({
+        title: "Sharing Failed",
+        description: `Failed to share health records via ${method}`,
+        variant: "destructive"
+      });
     }
   });
+  
+  // Simulate scanning for Bluetooth devices
+  const handleScanForDevices = async () => {
+    setIsScanning(true);
+    try {
+      const devices = await scanForBluetoothDevices();
+      setAvailableDevices(devices);
+      
+      if (devices.length === 0) {
+        toast({
+          title: "No Devices Found",
+          description: "No Bluetooth devices were found nearby",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Scanning Failed",
+        description: "Failed to scan for Bluetooth devices",
+        variant: "destructive"
+      });
+    } finally {
+      setIsScanning(false);
+    }
+  };
   
   const handleShareViaNfc = async () => {
     await shareViaNfc(patientId, isTemporaryAccess, accessDuration);
   };
   
   const handleShareViaBluetooth = async () => {
-    await shareViaBluetooth(patientId, isTemporaryAccess, accessDuration);
+    if (!selectedDevice) {
+      toast({
+        title: "No Device Selected",
+        description: "Please select a device to share with",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    await shareViaBluetooth(patientId, isTemporaryAccess, accessDuration, selectedDevice);
   };
   
   const handleGeneratePin = async () => {
@@ -122,6 +170,13 @@ const MobileHealthSharing: React.FC<MobileHealthSharingProps> = ({ patientId, pa
   // Load active PINs when component mounts
   React.useEffect(() => {
     loadActivePins();
+    
+    // Simulate some initial Bluetooth devices
+    setAvailableDevices([
+      { id: 'device_1', name: 'Ambulance Device #1' },
+      { id: 'device_2', name: 'Hospital ER Scanner' },
+      { id: 'device_3', name: 'Dr. Singh\'s Scanner' }
+    ]);
   }, [patientId]);
   
   return (
@@ -202,16 +257,62 @@ const MobileHealthSharing: React.FC<MobileHealthSharingProps> = ({ patientId, pa
               <Bluetooth className="h-16 w-16 mx-auto mb-2 text-primary" />
               <h3 className="font-medium">Bluetooth Sharing</h3>
               <p className="text-sm text-muted-foreground mb-4">
-                Connect to the healthcare provider's device via Bluetooth to share your health records.
+                Connect to a healthcare provider's device via Bluetooth to share your health records securely.
               </p>
-              <Button 
-                onClick={handleShareViaBluetooth} 
-                disabled={isSharing}
-                className="w-full"
-              >
-                {isSharing ? "Sharing..." : "Share via Bluetooth"}
-              </Button>
+              
+              <div className="space-y-4">
+                <Button 
+                  onClick={handleScanForDevices} 
+                  disabled={isScanning}
+                  variant="outline"
+                  className="w-full"
+                >
+                  <Search className="mr-2 h-4 w-4" />
+                  {isScanning ? "Scanning..." : "Scan for Devices"}
+                </Button>
+                
+                {availableDevices.length > 0 && (
+                  <div className="border rounded-md p-2 text-left">
+                    <div className="text-sm font-medium mb-2">Available Devices</div>
+                    <div className="space-y-2">
+                      {availableDevices.map(device => (
+                        <div 
+                          key={device.id}
+                          className={`flex items-center justify-between p-2 rounded-md cursor-pointer ${selectedDevice === device.id ? 'bg-primary/10 border border-primary/20' : 'hover:bg-accent'}`}
+                          onClick={() => setSelectedDevice(device.id)}
+                        >
+                          <div className="flex items-center">
+                            <Smartphone className="h-4 w-4 mr-2 text-muted-foreground" />
+                            <span>{device.name}</span>
+                          </div>
+                          {selectedDevice === device.id && (
+                            <CheckCircle className="h-4 w-4 text-primary" />
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                <Button 
+                  onClick={handleShareViaBluetooth} 
+                  disabled={isSharing || !selectedDevice}
+                  className="w-full"
+                >
+                  {isSharing ? "Sharing..." : "Share via Bluetooth"}
+                </Button>
+              </div>
             </div>
+            
+            {selectedDevice && (
+              <Alert className="bg-blue-500/10 border-blue-500">
+                <Bluetooth className="h-4 w-4 text-blue-500" />
+                <AlertTitle>Device Selected</AlertTitle>
+                <AlertDescription>
+                  Ready to share with {availableDevices.find(d => d.id === selectedDevice)?.name}
+                </AlertDescription>
+              </Alert>
+            )}
           </TabsContent>
           
           <TabsContent value="emergency" className="space-y-4">

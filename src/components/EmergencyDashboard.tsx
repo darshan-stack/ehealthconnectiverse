@@ -48,46 +48,104 @@ const EmergencyDashboard: React.FC<EmergencyDashboardProps> = ({
   const [accessedPatients, setAccessedPatients] = useState<any[]>([]);
   const [showAccessDialog, setShowAccessDialog] = useState(false);
   
-  const handleEmergencyResponse = (requestId: string, action: 'accept' | 'reject') => {
-    setEmergencyRequests(prev => 
-      prev.map(req => 
-        req.id === requestId 
-          ? { ...req, status: action === 'accept' ? 'active' : 'rejected' } 
-          : req
-      )
-    );
-    
-    toast({
-      title: action === 'accept' ? "Request Accepted" : "Request Rejected",
-      description: action === 'accept' 
-        ? "You now have emergency access to the patient's records" 
-        : "Emergency access request has been rejected",
-    });
-    
-    if (action === 'accept') {
-      const request = emergencyRequests.find(req => req.id === requestId);
-      if (request) {
-        setAccessedPatients(prev => [...prev, {
-          patientId: request.patientId,
-          patientName: request.patientName,
-          accessGranted: new Date(),
-          expiryTime: new Date(Date.now() + 24 * 60 * 60 * 1000)
-        }]);
+  // Fetch emergency requests and accessed patients on load
+  useEffect(() => {
+    // In a real app, we would fetch this data from the backend
+    const fetchEmergencyData = async () => {
+      try {
+        // Simulate fetching pending requests
+        const pendingRequests = await EmergencyAccessService.getPendingEmergencyRequests(providerId);
+        
+        // Add to our existing mock data
+        setEmergencyRequests(prev => [
+          ...prev.filter(req => req.status !== 'pending'),
+          ...pendingRequests
+        ]);
+        
+        // Simulate fetching access activity
+        const accessActivity = await EmergencyAccessService.getEmergencyAccessActivity(providerId);
+        
+        // Convert to accessed patients format
+        const patients = accessActivity.map(activity => ({
+          patientId: activity.patientId,
+          patientName: `Patient ${activity.patientId.slice(-3)}`, // In a real app, we'd get the actual name
+          accessGranted: activity.accessTime,
+          expiryTime: activity.expiryTime
+        }));
+        
+        setAccessedPatients(patients);
+      } catch (error) {
+        console.error('Error fetching emergency data:', error);
       }
+    };
+    
+    fetchEmergencyData();
+  }, [providerId]);
+  
+  const handleEmergencyResponse = async (requestId: string, action: 'accept' | 'reject') => {
+    try {
+      // Update request in backend
+      await EmergencyAccessService.respondToEmergencyRequest(
+        requestId,
+        providerId,
+        action
+      );
+      
+      // Update local state
+      setEmergencyRequests(prev => 
+        prev.map(req => 
+          req.id === requestId 
+            ? { ...req, status: action === 'accept' ? 'active' : 'rejected' } 
+            : req
+        )
+      );
+      
+      toast({
+        title: action === 'accept' ? "Request Accepted" : "Request Rejected",
+        description: action === 'accept' 
+          ? "You now have emergency access to the patient's records" 
+          : "Emergency access request has been rejected",
+      });
+      
+      if (action === 'accept') {
+        const request = emergencyRequests.find(req => req.id === requestId);
+        if (request) {
+          setAccessedPatients(prev => [...prev, {
+            patientId: request.patientId,
+            patientName: request.patientName,
+            accessGranted: new Date(),
+            expiryTime: new Date(Date.now() + 24 * 60 * 60 * 1000)
+          }]);
+        }
+      }
+    } catch (error) {
+      console.error(`Error ${action}ing emergency request:`, error);
+      toast({
+        title: "Action Failed",
+        description: `Failed to ${action} emergency request`,
+        variant: "destructive"
+      });
     }
   };
   
   const handleNewEmergencyAccess = (patientId: string, records: any[]) => {
     // Add to accessed patients
+    const patientName = records[0]?.patientName || "Unknown Patient";
+    
     setAccessedPatients(prev => [...prev, {
       patientId,
-      patientName: "Unknown Patient", // In a real app, we'd get this from records
+      patientName,
       accessGranted: new Date(),
       expiryTime: new Date(Date.now() + 24 * 60 * 60 * 1000),
       records
     }]);
     
     setShowAccessDialog(false);
+    
+    toast({
+      title: "Emergency Access Granted",
+      description: `You now have emergency access to ${patientName}'s records`,
+    });
   };
   
   return (

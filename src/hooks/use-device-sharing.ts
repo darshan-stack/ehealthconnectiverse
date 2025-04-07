@@ -11,11 +11,17 @@ interface DeviceSharingOptions {
   onShareError?: (error: Error, method: SharingMethod) => void;
 }
 
+interface BluetoothDevice {
+  id: string;
+  name: string;
+}
+
 export function useDeviceSharing(options?: DeviceSharingOptions) {
   const [isNfcAvailable, setIsNfcAvailable] = useState(false);
   const [isBluetoothAvailable, setIsBluetoothAvailable] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
   const [emergencyPin, setEmergencyPin] = useState<string | null>(null);
+  const [bluetoothDevices, setBluetoothDevices] = useState<BluetoothDevice[]>([]);
 
   // Check for NFC and Bluetooth availability (mock implementation)
   useEffect(() => {
@@ -46,6 +52,42 @@ export function useDeviceSharing(options?: DeviceSharingOptions) {
     checkNfcAvailability();
     checkBluetoothAvailability();
   }, []);
+
+  // Scan for Bluetooth devices
+  const scanForBluetoothDevices = async (): Promise<BluetoothDevice[]> => {
+    try {
+      // Mock scanning for devices
+      console.log('Scanning for Bluetooth devices...');
+      
+      // Simulate a delay for the "scanning" process
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Mock found devices
+      const mockDevices: BluetoothDevice[] = [
+        { id: 'device_1', name: 'Ambulance Device #1' },
+        { id: 'device_2', name: 'Hospital ER Scanner' },
+        { id: 'device_3', name: 'Dr. Singh\'s Scanner' },
+        { id: 'device_4', name: 'Emergency Paramedic Tablet' },
+        { id: 'device_5', name: 'City Hospital BLE Scanner' }
+      ];
+      
+      // Randomly select 2-5 devices to simulate variable discovery
+      const selectedDevices = mockDevices.sort(() => 0.5 - Math.random()).slice(0, Math.floor(Math.random() * 4) + 2);
+      
+      setBluetoothDevices(selectedDevices);
+      
+      return selectedDevices;
+    } catch (error) {
+      console.error('Error scanning for Bluetooth devices:', error);
+      toast({
+        title: "Scanning Failed",
+        description: "Failed to scan for Bluetooth devices",
+        variant: "destructive"
+      });
+      
+      return [];
+    }
+  };
 
   // Share health records via NFC
   const shareViaNfc = async (patientId: string, temporaryAccess: boolean = false, accessDuration?: number) => {
@@ -86,22 +128,27 @@ export function useDeviceSharing(options?: DeviceSharingOptions) {
   };
 
   // Share health records via Bluetooth
-  const shareViaBluetooth = async (patientId: string, temporaryAccess: boolean = false, accessDuration?: number) => {
+  const shareViaBluetooth = async (
+    patientId: string, 
+    temporaryAccess: boolean = false, 
+    accessDuration?: number,
+    deviceId?: string
+  ) => {
     try {
       setIsSharing(true);
       // Mock Bluetooth sharing implementation
-      console.log(`Sharing via Bluetooth: Patient ${patientId}, temporary: ${temporaryAccess}, duration: ${accessDuration}h`);
+      console.log(`Sharing via Bluetooth: Patient ${patientId}, temporary: ${temporaryAccess}, duration: ${accessDuration}h, device: ${deviceId || 'unknown'}`);
       
       // Simulate a delay for the "sharing" process
       await new Promise(resolve => setTimeout(resolve, 2000));
       
       toast({
         title: "Records Shared",
-        description: "Your health records have been shared via Bluetooth",
+        description: `Your health records have been shared via Bluetooth${deviceId ? ' to ' + bluetoothDevices.find(d => d.id === deviceId)?.name : ''}`,
       });
       
       if (options?.onShareSuccess) {
-        options.onShareSuccess('bluetooth');
+        options.onShareSuccess('bluetooth', deviceId);
       }
       
       return true;
@@ -161,8 +208,10 @@ export function useDeviceSharing(options?: DeviceSharingOptions) {
     isBluetoothAvailable,
     isSharing,
     emergencyPin,
+    bluetoothDevices,
     shareViaNfc,
     shareViaBluetooth,
     generateEmergencyPin,
+    scanForBluetoothDevices,
   };
 }

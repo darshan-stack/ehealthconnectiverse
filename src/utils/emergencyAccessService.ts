@@ -9,6 +9,7 @@ interface EmergencyAccess {
   accessGrantedTo: string; // Provider or paramedic ID
   expiryTime: number; // Unix timestamp
   used: boolean;
+  notificationSent?: boolean;
 }
 
 // Mock in-memory storage for emergency PINs
@@ -30,7 +31,8 @@ export const EmergencyAccessService = {
         pin,
         accessGrantedTo: '', // Will be filled when used
         expiryTime,
-        used: false
+        used: false,
+        notificationSent: false
       };
       
       emergencyAccessStore.push(access);
@@ -55,7 +57,7 @@ export const EmergencyAccessService = {
     pin: string, 
     patientId: string, 
     providerId: string
-  ): Promise<{ valid: boolean; records?: any[] }> => {
+  ): Promise<{ valid: boolean; records?: any[]; message?: string }> => {
     try {
       // Find the emergency access
       const accessIndex = emergencyAccessStore.findIndex(
@@ -66,7 +68,10 @@ export const EmergencyAccessService = {
       );
       
       if (accessIndex === -1) {
-        throw new Error('Invalid or expired emergency PIN');
+        return {
+          valid: false,
+          message: 'Invalid or expired emergency PIN'
+        };
       }
       
       // Mark as used
@@ -86,12 +91,14 @@ export const EmergencyAccessService = {
       
       return {
         valid: true,
-        records
+        records,
+        message: 'Emergency access granted successfully'
       };
     } catch (error) {
       console.error('Error validating emergency PIN:', error);
       return {
-        valid: false
+        valid: false,
+        message: 'An error occurred while validating the emergency PIN'
       };
     }
   },
@@ -117,6 +124,45 @@ export const EmergencyAccessService = {
         access.expiryTime > Date.now()
       )
       .map(({ pin, ...rest }) => rest); // Exclude the PIN for security
+  },
+  
+  // Get pending emergency access requests for a provider
+  getPendingEmergencyRequests: (providerId: string): any[] => {
+    // In a real implementation, this would query the backend
+    // Here we'll just return mock data
+    return [
+      {
+        id: 'req_001',
+        patientId: 'patient_123',
+        patientName: 'Rajiv Kumar',
+        timestamp: Date.now() - 10 * 60 * 1000, // 10 minutes ago
+        reason: 'Cardiac emergency',
+        status: 'pending'
+      },
+      {
+        id: 'req_002',
+        patientId: 'patient_456',
+        patientName: 'Meera Patel',
+        timestamp: Date.now() - 25 * 60 * 1000, // 25 minutes ago
+        reason: 'Accident victim',
+        status: 'pending'
+      }
+    ];
+  },
+  
+  // Get emergency access activity for a provider
+  getEmergencyAccessActivity: (providerId: string): any[] => {
+    // Get accesses granted to this provider
+    const providerAccessLog = emergencyAccessStore
+      .filter(access => access.accessGrantedTo === providerId && access.used)
+      .map(access => ({
+        patientId: access.patientId,
+        accessTime: new Date(access.expiryTime - (60 * 60 * 1000)), // Approximate time when access was used
+        expiryTime: new Date(access.expiryTime)
+      }));
+    
+    // In a real implementation, this would include data from the blockchain
+    return providerAccessLog;
   },
   
   // Revoke an emergency PIN
@@ -152,6 +198,71 @@ export const EmergencyAccessService = {
       return false;
     } catch (error) {
       console.error('Error revoking emergency PIN:', error);
+      return false;
+    }
+  },
+
+  // Send notification to healthcare providers about emergency access
+  notifyEmergencyProviders: async (patientId: string, emergencyDetails: any): Promise<boolean> => {
+    try {
+      // In a real implementation, this would send push notifications, SMS, or emails
+      // to designated emergency providers
+      
+      console.log(`Sending emergency notifications for patient ${patientId}`, emergencyDetails);
+      
+      // Find any unused emergency access PINs for this patient
+      const accessIndex = emergencyAccessStore.findIndex(
+        access => access.patientId === patientId && 
+                 !access.used &&
+                 !access.notificationSent &&
+                 access.expiryTime > Date.now()
+      );
+      
+      if (accessIndex !== -1) {
+        // Mark notification as sent
+        emergencyAccessStore[accessIndex].notificationSent = true;
+        
+        // Add to blockchain for auditing
+        await addRecordToBlockchain({
+          type: 'EMERGENCY_NOTIFICATION_SENT',
+          patientId,
+          timestamp: Date.now(),
+          details: emergencyDetails
+        });
+        
+        return true;
+      }
+      
+      return false;
+    } catch (error) {
+      console.error('Error sending emergency notifications:', error);
+      return false;
+    }
+  },
+  
+  // Respond to emergency access request
+  respondToEmergencyRequest: async (
+    requestId: string, 
+    providerId: string, 
+    action: 'accept' | 'reject',
+    reason?: string
+  ): Promise<boolean> => {
+    try {
+      // In a real implementation, this would update the emergency request status in the backend
+      console.log(`Provider ${providerId} ${action}ed emergency request ${requestId}`);
+      
+      // Add to blockchain for auditing
+      await addRecordToBlockchain({
+        type: action === 'accept' ? 'EMERGENCY_REQUEST_ACCEPTED' : 'EMERGENCY_REQUEST_REJECTED',
+        requestId,
+        providerId,
+        timestamp: Date.now(),
+        reason
+      });
+      
+      return true;
+    } catch (error) {
+      console.error(`Error ${action}ing emergency request:`, error);
       return false;
     }
   }
