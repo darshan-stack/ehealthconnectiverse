@@ -271,7 +271,7 @@ const EmergencyDashboard: React.FC<EmergencyDashboardProps> = ({
                     <div className="flex items-center gap-1 mt-1">
                       <Clock className="h-3 w-3 text-muted-foreground" />
                       <span className="text-xs text-muted-foreground">
-                        Expires in {Math.ceil((patient.expiryTime - new Date()) / (1000 * 60 * 60))}h
+                        Expires in {Math.ceil((patient.expiryTime.getTime() - new Date().getTime()) / (1000 * 60 * 60))}h
                       </span>
                     </div>
                   </div>
