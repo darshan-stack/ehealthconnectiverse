@@ -158,3 +158,186 @@ export const verifyBlockchain = (): boolean => {
   
   return true;
 };
+
+// New functionality for NFC and Bluetooth sharing
+interface SharingPermission {
+  userId: string;
+  recipientId: string;
+  permissionType: 'nfc' | 'bluetooth' | 'emergency';
+  timestamp: number;
+  expirationTime: number | null;
+  data: {
+    recordIds?: string[];
+    allRecords?: boolean;
+    readOnly?: boolean;
+  };
+}
+
+// Mock storage for sharing permissions
+const sharingPermissions: SharingPermission[] = [];
+
+// Function to add sharing permission to the blockchain
+export const addSharingPermission = (
+  userId: string,
+  recipientId: string,
+  permissionType: 'nfc' | 'bluetooth' | 'emergency',
+  expirationTime: number | null = null,
+  data: SharingPermission['data'] = { allRecords: true, readOnly: true }
+): BlockchainRecord => {
+  const permission: SharingPermission = {
+    userId,
+    recipientId,
+    permissionType,
+    timestamp: Date.now(),
+    expirationTime,
+    data
+  };
+  
+  // Add to local storage
+  sharingPermissions.push(permission);
+  
+  // Add to blockchain for auditing
+  return addRecordToBlockchain({
+    type: 'SHARING_PERMISSION',
+    permission
+  });
+};
+
+// Function to check if a recipient has access to a user's records
+export const checkAccessPermission = (
+  userId: string,
+  recipientId: string
+): boolean => {
+  const now = Date.now();
+  
+  // Check if there's a valid permission
+  const validPermission = sharingPermissions.find(
+    p => p.userId === userId && 
+         p.recipientId === recipientId && 
+         (p.expirationTime === null || p.expirationTime > now)
+  );
+  
+  return !!validPermission;
+};
+
+// Emergency override tracking
+interface EmergencyOverride {
+  patientId: string;
+  providerId: string;
+  pin: string;
+  timestamp: number;
+  expirationTime: number;
+  used: boolean;
+  accessReason: string;
+}
+
+// Mock storage for emergency overrides
+const emergencyOverrides: EmergencyOverride[] = [];
+
+// Function to create an emergency override
+export const createEmergencyOverride = (
+  patientId: string,
+  pin: string,
+  expirationTimeMinutes: number = 60
+): BlockchainRecord => {
+  const override: EmergencyOverride = {
+    patientId,
+    providerId: '', // Will be filled when used
+    pin,
+    timestamp: Date.now(),
+    expirationTime: Date.now() + (expirationTimeMinutes * 60 * 1000),
+    used: false,
+    accessReason: ''
+  };
+  
+  // Add to local storage
+  emergencyOverrides.push(override);
+  
+  // Add to blockchain for auditing
+  return addRecordToBlockchain({
+    type: 'EMERGENCY_OVERRIDE_CREATED',
+    patientId,
+    timestamp: Date.now(),
+    expirationTime: override.expirationTime
+  });
+};
+
+// Function to use an emergency override
+export const useEmergencyOverride = (
+  patientId: string,
+  pin: string,
+  providerId: string,
+  accessReason: string
+): boolean => {
+  const now = Date.now();
+  
+  // Find the override
+  const overrideIndex = emergencyOverrides.findIndex(
+    o => o.patientId === patientId && 
+         o.pin === pin && 
+         !o.used &&
+         o.expirationTime > now
+  );
+  
+  if (overrideIndex === -1) {
+    return false;
+  }
+  
+  // Update the override
+  emergencyOverrides[overrideIndex].used = true;
+  emergencyOverrides[overrideIndex].providerId = providerId;
+  emergencyOverrides[overrideIndex].accessReason = accessReason;
+  
+  // Add to blockchain for auditing
+  addRecordToBlockchain({
+    type: 'EMERGENCY_OVERRIDE_USED',
+    patientId,
+    providerId,
+    timestamp: now,
+    accessReason
+  });
+  
+  return true;
+};
+
+// AI consistency check record
+interface ConsistencyCheckResult {
+  recordId: string;
+  checkType: 'duplicate_prescription' | 'medication_interaction' | 'data_inconsistency';
+  timestamp: number;
+  details: any;
+  severity: 'info' | 'warning' | 'critical';
+}
+
+// Mock storage for consistency checks
+const consistencyChecks: ConsistencyCheckResult[] = [];
+
+// Function to add a consistency check result
+export const addConsistencyCheckResult = (
+  recordId: string,
+  checkType: ConsistencyCheckResult['checkType'],
+  details: any,
+  severity: ConsistencyCheckResult['severity'] = 'warning'
+): BlockchainRecord => {
+  const check: ConsistencyCheckResult = {
+    recordId,
+    checkType,
+    timestamp: Date.now(),
+    details,
+    severity
+  };
+  
+  // Add to local storage
+  consistencyChecks.push(check);
+  
+  // Add to blockchain for auditing
+  return addRecordToBlockchain({
+    type: 'CONSISTENCY_CHECK',
+    check
+  });
+};
+
+// Function to get consistency check results for a record
+export const getConsistencyCheckResults = (recordId: string): ConsistencyCheckResult[] => {
+  return consistencyChecks.filter(check => check.recordId === recordId);
+};

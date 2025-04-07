@@ -8,6 +8,7 @@ import { AuthProvider } from "./context/AuthContext";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import PatientDashboard from "./pages/PatientDashboard";
+import PatientMobile from "./pages/PatientMobile";
 import DoctorDashboard from "./pages/DoctorDashboard";
 import Chat from "./pages/Chat";
 import Records from "./pages/Records";
@@ -26,6 +27,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/patient/*" element={<PatientDashboard />} />
+            <Route path="/mobile" element={<PatientMobile />} />
             <Route path="/doctor/*" element={<DoctorDashboard />} />
             <Route path="/chat/:id" element={<Chat />} />
             <Route path="/records" element={<Records />} />
