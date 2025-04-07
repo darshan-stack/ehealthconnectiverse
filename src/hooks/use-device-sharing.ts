@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { toast } from '@/hooks/use-toast';
 import QRCode from 'qrcode';
@@ -53,7 +52,7 @@ export function useDeviceSharing(options?: DeviceSharingOptions) {
     const checkBluetoothAvailability = async () => {
       try {
         // Check if 'navigator.bluetooth' is available
-        const isAvailable = 'bluetooth' in navigator;
+        const isAvailable = 'bluetooth' in navigator && typeof navigator.bluetooth !== 'undefined';
         setIsBluetoothAvailable(isAvailable);
       } catch (error) {
         console.error('Error checking Bluetooth availability:', error);
@@ -191,7 +190,7 @@ export function useDeviceSharing(options?: DeviceSharingOptions) {
 
   // Scan for Bluetooth devices using the Web Bluetooth API
   const scanForBluetoothDevices = async (): Promise<BluetoothDevice[]> => {
-    if (!isBluetoothAvailable) {
+    if (!isBluetoothAvailable || !navigator.bluetooth) {
       console.error('Bluetooth is not available');
       toast({
         title: "Bluetooth Not Available",
@@ -257,7 +256,7 @@ export function useDeviceSharing(options?: DeviceSharingOptions) {
     accessDuration?: number,
     deviceId?: string
   ) => {
-    if (!isBluetoothAvailable) {
+    if (!isBluetoothAvailable || !navigator.bluetooth) {
       console.error('Bluetooth is not available');
       toast({
         title: "Bluetooth Not Available",
