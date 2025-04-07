@@ -6,6 +6,7 @@ import HeroSection from '@/components/HeroSection';
 import FeatureCard from '@/components/FeatureCard';
 import Footer from '@/components/Footer';
 import FeaturedFunctionality from '@/components/FeaturedFunctionality';
+import { UserCircle, Stethoscope, Smartphone } from 'lucide-react';
 
 const Index = () => {
   return (
@@ -26,19 +27,19 @@ const Index = () => {
             <FeatureCard 
               title="Patient Portal"
               description="Manage your medical records, appointments, and prescriptions"
-              icon="UserCircle"
+              icon={UserCircle}
               link="/patient"
             />
             <FeatureCard 
               title="Doctor Dashboard"
               description="Efficiently manage patients, consultations and treatment plans"
-              icon="Stethoscope"
+              icon={Stethoscope}
               link="/doctor"
             />
             <FeatureCard 
               title="Mobile Access"
               description="Access your health data on-the-go and share with providers"
-              icon="Smartphone"
+              icon={Smartphone}
               link="/mobile"
             />
           </div>
